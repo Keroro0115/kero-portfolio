@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kero · Portfolio Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Hanken+Grotesk:wght@400;500;600&family=Noto+Serif+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* —— 底色与墨色 / Base & Ink —— */
+    --paper:#F7F7F7;        /* 近白质感主底 */
+    --paper-2:#EFEEEA;      /* 面板 / 次级底 */
+    --ink:#1A1A18;          /* 近黑（衬线大字 + 正文） */
+    --ink-soft:#6E6E6A;     /* 灰（小标签 / 注解 / 次要文字） */
+    --line:#DCDAD4;         /* 发丝分隔线 */
+    --accent:#C5302A;       /* 系统强调色 · 红（克制使用） */
+    --cobalt:#2A33B8;       /* 钴蓝 · 招牌错位色框 */
+
+    /* —— 项目强调色（每个项目自带一组）—— */
+    --c-oxblood:#8A2B2E;
+    --c-gold:#C0972F;
+    --c-navy:#2B3540;
+    --c-forest:#2E6B4F;
+    --c-vermilion:#D2502A;
+
+    --maxw:1180px;
+    --gut:clamp(20px,5vw,72px);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"EB Garamond","Noto Serif SC",Georgia,serif;
+    font-size:18px;line-height:1.7;-webkit-font-smoothing:antialiased;
+    position:relative;overflow-x:hidden;
+  }
+  /* 纸张质感颗粒 / paper grain */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    mix-blend-mode:multiply;
+  }
+  .wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:0 var(--gut);}
+
+  /* —— 通用排版 / utility type —— */
+  .eyebrow{
+    font-family:"Hanken Grotesk",sans-serif;font-weight:500;
+    font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--ink-soft);
+    display:flex;align-items:center;gap:14px;
+  }
+  .eyebrow::before{content:"";width:34px;height:1px;background:var(--accent);display:inline-block;}
+  .num{font-family:"Hanken Grotesk",sans-serif;font-weight:500;color:var(--accent);font-size:12px;letter-spacing:.2em;}
+  .serif-d{font-family:"Cormorant Garamond","Noto Serif SC",serif;}
+  .cjk{font-family:"Noto Serif SC",serif;}
+  .soft{color:var(--ink-soft);}
+  .rule{height:1px;background:var(--line);border:0;width:100%;}
+
+  /* —— 顶部 masthead —— */
+  header.masthead{padding:clamp(64px,11vh,140px) 0 clamp(40px,7vh,80px);}
+  .masthead .eyebrow{margin-bottom:clamp(40px,8vh,90px);}
+  .mast-name{
+    font-family:"Cormorant Garamond",serif;font-weight:400;
+    font-size:clamp(64px,15vw,184px);line-height:.92;letter-spacing:-.01em;margin:0;
+  }
+  .mast-name em{font-style:italic;color:var(--accent);}
+  .mast-sub{
+    display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;
+    gap:24px;margin-top:28px;padding-top:22px;border-top:1px solid var(--line);
+  }
+  .mast-sub .cjk{font-size:21px;font-weight:400;}
+  .mast-sub .role{font-family:"Hanken Grotesk",sans-serif;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-soft);}
+
+  /* —— section 框架 —— */
+  section.block{padding:clamp(56px,9vh,108px) 0;border-top:1px solid var(--line);}
+  .block-head{display:flex;align-items:baseline;gap:18px;margin-bottom:48px;flex-wrap:wrap;}
+  .block-head h2{font-family:"Cormorant Garamond",serif;font-weight:400;font-size:clamp(30px,5vw,52px);margin:0;line-height:1;}
+  .block-head .cjk{font-size:18px;color:var(--ink-soft);align-self:center;}
+
+  /* —— 01 色彩 —— */
+  .swatch-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2px;margin-bottom:40px;}
+  .swatch{padding:22px 18px;min-height:148px;display:flex;flex-direction:column;justify-content:flex-end;border:1px solid rgba(0,0,0,.05);}
+  .swatch .nm{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;}
+  .swatch .hex{font-family:"Hanken Grotesk",sans-serif;font-size:13px;letter-spacing:.06em;opacity:.7;}
+  .accent-dots{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+  .dot{width:34px;height:34px;border-radius:50%;}
+  .dot-item{display:flex;align-items:center;gap:11px;}
+  .dot-item .lab{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);}
+
+  /* —— 02 字体 —— */
+  .spec-display{font-family:"Cormorant Garamond",serif;font-weight:300;font-size:clamp(56px,12vw,128px);line-height:.95;margin:0 0 6px;letter-spacing:-.01em;}
+  .spec-row{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding:18px 0;gap:18px;flex-wrap:wrap;}
+  .spec-row .sample{flex:1;min-width:200px;}
+  .spec-row .meta{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap;}
+  .cjk-spec{font-family:"Noto Serif SC",serif;font-weight:400;font-size:clamp(26px,5vw,40px);line-height:1.4;margin:34px 0 0;}
+
+  /* —— 03 结构与标记 —— */
+  .marks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:40px 48px;align-items:start;}
+  .mark-cell .eyebrow{margin-bottom:18px;}
+  .year-badge{display:inline-flex;align-items:center;justify-content:center;padding:7px 20px;border:1px solid var(--line);border-radius:40px;font-family:"Hanken Grotesk",sans-serif;font-size:13px;letter-spacing:.14em;color:var(--ink-soft);}
+  .pills{display:flex;gap:10px;flex-wrap:wrap;}
+  .pill{padding:7px 16px;border:1px solid var(--ink);border-radius:40px;font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
+  .rule-demo{display:flex;flex-direction:column;gap:14px;}
+  .rule-demo .hair{height:1px;background:var(--line);}
+  .rule-demo .accent-rule{height:2px;width:60px;background:var(--accent);}
+
+  /* —— 04 组件 —— */
+  .comp{margin-bottom:54px;}
+  .comp > .eyebrow{margin-bottom:22px;}
+
+  /* 项目索引条目 */
+  .idx-item{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:baseline;padding:22px 0;border-top:1px solid var(--line);}
+  .idx-item:last-child{border-bottom:1px solid var(--line);}
+  .idx-item .idx-no{font-family:"Hanken Grotesk",sans-serif;font-size:12px;letter-spacing:.1em;color:var(--accent);padding-top:8px;}
+  .idx-item .idx-en{font-family:"Cormorant Garamond",serif;font-size:clamp(22px,3.4vw,32px);line-height:1.1;}
+  .idx-item .idx-zh{font-family:"Noto Serif SC",serif;font-size:15px;color:var(--ink-soft);margin-top:3px;}
+  .idx-item .idx-tag{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap;}
+
+  /* 项目头部块 */
+  .proj-head{padding:8px 0 4px;}
+  .proj-head .accent-bar{display:flex;gap:9px;margin:18px 0;}
+  .proj-head .accent-bar span{width:18px;height:18px;border-radius:50%;}
+  .proj-head h3{font-family:"Cormorant Garamond",serif;font-weight:400;font-size:clamp(34px,6vw,58px);line-height:1.02;margin:0;}
+  .proj-head .zh{font-family:"Noto Serif SC",serif;font-weight:500;font-size:clamp(17px,2.4vw,21px);margin:10px 0 0;}
+  .proj-head .head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-top:22px;}
+
+  /* 可替换图片位 */
+  .slot{position:relative;aspect-ratio:16/9;background:var(--paper-2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;}
+  .slot .tick{position:absolute;width:14px;height:14px;border:1px solid var(--ink-soft);}
+  .slot .tick.tl{top:10px;left:10px;border-right:0;border-bottom:0;}
+  .slot .tick.tr{top:10px;right:10px;border-left:0;border-bottom:0;}
+  .slot .tick.bl{bottom:10px;left:10px;border-right:0;border-top:0;}
+  .slot .tick.br{bottom:10px;right:10px;border-left:0;border-top:0;}
+  .slot .slot-label{text-align:center;color:var(--ink-soft);}
+  .slot .slot-label .fn{font-family:"Hanken Grotesk",sans-serif;font-size:12px;letter-spacing:.12em;}
+  .slot .slot-label .hint{font-family:"Hanken Grotesk",sans-serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.7;margin-top:6px;}
+  .caption{font-size:15px;color:var(--ink-soft);margin-top:12px;max-width:560px;}
+  .caption .cap-en{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;display:block;margin-bottom:5px;color:var(--accent);}
+
+  /* —— 05 招牌：描边章节大字 —— */
+  .opener{padding:clamp(40px,7vh,90px) 0 clamp(20px,4vh,40px);}
+  .opener .ghost{
+    font-family:"Cormorant Garamond",serif;font-weight:500;
+    font-size:clamp(72px,22vw,290px);line-height:.82;letter-spacing:-.02em;
+    color:transparent;-webkit-text-stroke:1px var(--ink-soft);text-stroke:1px var(--ink-soft);
+    margin:0;user-select:none;
+  }
+  .opener .o-label{display:flex;align-items:baseline;gap:16px;margin-top:14px;}
+  .opener .o-label .cjk{font-family:"Noto Serif SC",serif;font-size:clamp(20px,3vw,30px);}
+  .opener .o-label .en{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:clamp(16px,2vw,22px);color:var(--accent);}
+
+  /* —— 06 原则 —— */
+  .princ{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:36px 44px;}
+  .princ .p-no{font-family:"Hanken Grotesk",sans-serif;font-size:12px;letter-spacing:.14em;color:var(--accent);margin-bottom:10px;}
+  .princ h4{font-family:"Cormorant Garamond",serif;font-weight:500;font-size:24px;margin:0 0 8px;}
+  .princ p{font-size:16px;color:var(--ink-soft);margin:0;}
+
+  footer{border-top:1px solid var(--line);padding:48px 0 64px;}
+  footer .f-row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:16px;}
+  footer .f-name{font-family:"Cormorant Garamond",serif;font-size:28px;}
+  footer .f-meta{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);}
+
+  /* 入场动画 */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform .9s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none;}
+    html{scroll-behavior:auto;}
+  }
+  a{color:inherit;}
+  ::selection{background:var(--accent);color:var(--paper);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="masthead">
+    <div class="eyebrow reveal">Portfolio Design System · 设计系统</div>
+    <h1 class="mast-name reveal">Kero<em>.</em></h1>
+    <div class="mast-sub reveal">
+      <div class="cjk">许琳 · 作品集视觉系统</div>
+      <div class="role">UI &amp; UX Designer — 10 yrs</div>
+    </div>
+  </header>
+
+  <p class="reveal soft" style="max-width:640px;font-size:19px;margin:0 0 12px;">
+    这是整套作品集与个人网站的视觉准则——配色、字体、结构标记与组件。每一页都从这里取值，保证从静态 PDF 到在线网站的语言始终一致。把这份文件交给 Claude&nbsp;Code，它就照此搭建。
+  </p>
+
+  <!-- ============ 01 COLOR ============ -->
+  <section class="block">
+    <div class="block-head reveal"><span class="num">01</span><h2>Color</h2><span class="cjk">色彩</span></div>
+
+    <div class="eyebrow reveal" style="margin-bottom:16px;">Foundation · 基础底色与墨色</div>
+    <div class="swatch-row reveal">
+      <div class="swatch" style="background:var(--paper);color:var(--ink);"><span class="nm">Paper / 近白底</span><span class="hex">#F7F7F7</span></div>
+      <div class="swatch" style="background:var(--paper-2);color:var(--ink);"><span class="nm">Panel / 面板</span><span class="hex">#EFEEEA</span></div>
+      <div class="swatch" style="background:var(--ink);color:var(--paper);"><span class="nm">Ink / 墨</span><span class="hex">#1A1A18</span></div>
+      <div class="swatch" style="background:var(--ink-soft);color:var(--paper);"><span class="nm">Ink Soft / 次要</span><span class="hex">#6E6E6A</span></div>
+      <div class="swatch" style="background:var(--line);color:var(--ink);"><span class="nm">Line / 发丝线</span><span class="hex">#DCDAD4</span></div>
+      <div class="swatch" style="background:var(--accent);color:var(--paper);"><span class="nm">Accent / 红</span><span class="hex">#C5302A</span></div>
+      <div class="swatch" style="background:var(--cobalt);color:var(--paper);"><span class="nm">Cobalt / 钴蓝</span><span class="hex">#2A33B8</span></div>
+    </div>
+
+    <div class="eyebrow reveal" style="margin-bottom:20px;">Per-project accent · 每个项目自带一组强调色</div>
+    <div class="accent-dots reveal">
+      <div class="dot-item"><span class="dot" style="background:var(--c-oxblood)"></span><span class="lab">酒红 · 红酒官网</span></div>
+      <div class="dot-item"><span class="dot" style="background:var(--c-navy)"></span><span class="lab">墨蓝 · CRM 系统</span></div>
+      <div class="dot-item"><span class="dot" style="background:var(--c-gold)"></span><span class="lab">金 · 移动端</span></div>
+      <div class="dot-item"><span class="dot" style="background:var(--c-vermilion)"></span><span class="lab">朱 · 小程序</span></div>
+      <div class="dot-item"><span class="dot" style="background:var(--c-forest)"></span><span class="lab">林绿 · AI 平台</span></div>
+    </div>
+    <p class="caption reveal" style="margin-top:22px;">底色与墨色全局统一；强调色按项目切换——封面与索引保持中性，进入某个项目时由它的色点领路，沿用你旧作品集"一项目一组色"的做法。</p>
+  </section>
+
+  <!-- ============ 02 TYPOGRAPHY ============ -->
+  <section class="block">
+    <div class="block-head reveal"><span class="num">02</span><h2>Typography</h2><span class="cjk">字体</span></div>
+
+    <p class="spec-display reveal">Portfolio</p>
+    <div class="reveal">
+      <div class="spec-row"><div class="sample serif-d" style="font-size:40px;">Cormorant Garamond</div><div class="meta">Display · 标题 · 300/400</div></div>
+      <div class="spec-row"><div class="sample" style="font-size:20px;font-family:'EB Garamond',serif;">EB Garamond — 正文与长段落，衬线的呼吸与格调。</div><div class="meta">Body · 正文 · 400</div></div>
+      <div class="spec-row"><div class="sample" style="font-family:'Hanken Grotesk',sans-serif;letter-spacing:.2em;text-transform:uppercase;font-size:13px;">Hanken Grotesk — Labels &amp; Data</div><div class="meta">Utility · 标签 / 数据</div></div>
+    </div>
+    <p class="cjk-spec reveal">思源宋体 · 中文衬线<br><span style="font-size:.62em;color:var(--ink-soft);">承接你封面的宋体气质——克制、复古、有距离感。</span></p>
+  </section>
+
+  <!-- ============ 03 STRUCTURE ============ -->
+  <section class="block">
+    <div class="block-head reveal"><span class="num">03</span><h2>Structure &amp; Marks</h2><span class="cjk">结构与标记</span></div>
+    <div class="marks-grid reveal">
+      <div class="mark-cell">
+        <div class="eyebrow">Eyebrow Label · 眉标</div>
+        <p class="soft" style="font-size:15px;margin:0;">字母间距拉开的小标题，配一截酒红短线，用来引导每个区块。</p>
+      </div>
+      <div class="mark-cell">
+        <div class="eyebrow">Hairline rules · 分隔线</div>
+        <div class="rule-demo"><div class="hair"></div><div class="accent-rule"></div></div>
+        <p class="soft" style="font-size:15px;margin:12px 0 0;">发丝灰线分区；酒红短线作重点。</p>
+      </div>
+      <div class="mark-cell">
+        <div class="eyebrow">Year badge · 年份徽标</div>
+        <span class="year-badge">2018 — 2020</span>
+      </div>
+      <div class="mark-cell">
+        <div class="eyebrow">Tag pills · 标签胶囊</div>
+        <div class="pills"><span class="pill">Brand</span><span class="pill">UI / UX</span><span class="pill">Website</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 COMPONENTS ============ -->
+  <section class="block">
+    <div class="block-head reveal"><span class="num">04</span><h2>Components</h2><span class="cjk">组件</span></div>
+
+    <!-- 项目索引 -->
+    <div class="comp reveal">
+      <div class="eyebrow">Project Index · 项目索引</div>
+      <div class="idx-item"><span class="idx-no">01</span><div><div class="idx-en">Robert Geddes Websites</div><div class="idx-zh">澳洲葡萄酒大师 · 官网设计</div></div><span class="idx-tag">Web · Brand</span></div>
+      <div class="idx-item"><span class="idx-no">02</span><div><div class="idx-en">Guardforce CRM Platform</div><div class="idx-zh">企业内部 CRM 系统 · B 端</div></div><span class="idx-tag">System · UX</span></div>
+      <div class="idx-item"><span class="idx-no">03</span><div><div class="idx-en">Robert Geddes App</div><div class="idx-zh">红酒大师 · 移动端设计</div></div><span class="idx-tag">App · Mobile</span></div>
+      <div class="idx-item"><span class="idx-no">04</span><div><div class="idx-en">Island Queue</div><div class="idx-zh">排队小程序 · 创意探索</div></div><span class="idx-tag">Mini-Program</span></div>
+      <div class="idx-item"><span class="idx-no">05</span><div><div class="idx-en">OneStory · AI Platform</div><div class="idx-zh">AI 产品平台 · 3 年线上经验</div></div><span class="idx-tag">AI · Product</span></div>
+    </div>
+
+    <!-- 项目头部块 + 可替换图片位 -->
+    <div class="comp reveal">
+      <div class="eyebrow">Project Header + Image Slot · 项目头部 + 可替换图片位</div>
+      <div class="proj-head">
+        <span class="num">05</span>
+        <div class="accent-bar"><span style="background:var(--c-forest)"></span><span style="background:var(--c-navy)"></span><span style="background:var(--c-gold)"></span></div>
+        <h3>OneStory</h3>
+        <p class="zh">AI 内容创作平台 · 设计与交互</p>
+        <div class="head-row">
+          <span class="caption" style="margin:0;">线上产品 onestory.art — 用研、设计系统、交互到前端对接的完整链路。</span>
+          <div class="pills"><span class="pill">AI</span><span class="pill">Product</span><span class="pill">UX</span></div>
+        </div>
+      </div>
+      <div class="slot" style="margin-top:26px;">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <div class="slot-label"><div class="fn">/assets/onestory/cover.jpg</div><div class="hint">替换此处图片 · 比例 16:9</div></div>
+      </div>
+      <p class="caption"><span class="cap-en">Caption · 解说</span>每张图都是一个独立文件槽：换图只需把同名文件丢进 /assets 文件夹，版式与解说原封不动。图与字分离，维护从此不动结构。</p>
+    </div>
+  </section>
+
+  <!-- ============ 05 SIGNATURE ============ -->
+  <section class="block">
+    <div class="block-head reveal"><span class="num">05</span><h2>Signature</h2><span class="cjk">招牌元素</span></div>
+    <div class="opener reveal">
+      <p class="ghost">PROJECT</p>
+      <div class="o-label"><span class="cjk">项目</span><span class="en">— section opener</span></div>
+    </div>
+    <p class="caption reveal">巨大的描边衬线大字作为章节开场——延续你封面 PORTFOLIO / WEB / MINI&nbsp;PROGRAMS 的语言。每个大板块用一个词领入，是整套作品集最容易被记住的一笔。</p>
+  </section>
+
+  <!-- ============ 06 PRINCIPLES ============ -->
+  <section class="block">
+    <div class="block-head reveal"><span class="num">06</span><h2>Principles</h2><span class="cjk">原则</span></div>
+    <div class="princ reveal">
+      <div><div class="p-no">P.01</div><h4>留白先行</h4><p>大量负空间，让排版与气质说话，而非堆满内容。</p></div>
+      <div><div class="p-no">P.02</div><h4>动效克制</h4><p>缓慢淡入、滚动揭示、悬停微反馈——一处编排胜过满屏特效。</p></div>
+      <div><div class="p-no">P.03</div><h4>图字分离</h4><p>图片走文件槽，文字走结构，互不牵连，便于精准增删改。</p></div>
+      <div><div class="p-no">P.04</div><h4>一项目一色</h4><p>全局中性，进入项目由其强调色领路。</p></div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="f-row reveal">
+      <span class="f-name serif-d">许琳 · Kero</span>
+      <span class="f-meta">UI &amp; UX Designer · Design System v1</span>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  (function(){
+    var els=document.querySelectorAll('.reveal');
+    if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});return;}
+    var io=new IntersectionObserver(function(en){
+      en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+    },{threshold:.12});
+    els.forEach(function(e){io.observe(e);});
+  })();
+</script>
+</body>
+</html>

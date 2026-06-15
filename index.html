@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kero · UI &amp; UX Designer</title>
+<meta name="description" content="Kero · 十年 UI & UX 设计师，近三年专注已上线的 AI 产品设计。作品集与案例。">
+<meta name="theme-color" content="#F7F7F7">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Kero · UI & UX Designer">
+<meta property="og:description" content="十年 UI & UX，近三年深耕已上线的 AI 产品。作品集与案例。">
+<meta property="og:image" content="assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F7F7F7'/%3E%3Ccircle cx='9' cy='16' r='4' fill='%231A1A18'/%3E%3Ccircle cx='19' cy='16' r='4' fill='%23C5302A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Hanken+Grotesk:wght@400;500;600;800&family=Noto+Serif+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F7F7;--paper-2:#EFEEEA;--ink:#1A1A18;--ink-soft:#6E6E6A;--line:#DCDAD4;
+    --accent:#C5302A;--cobalt:#2A33B8;
+    --c-oxblood:#8A2B2E;--c-navy:#2B3540;--c-gold:#C0972F;--c-vermilion:#D2502A;--c-forest:#2E6B4F;
+    --maxw:1240px;--gut:clamp(22px,5vw,90px);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"EB Garamond","Noto Serif SC",Georgia,serif;font-size:18px;line-height:1.75;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden;}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");mix-blend-mode:multiply;}
+  .wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:0 var(--gut);}
+  a{color:inherit;}::selection{background:var(--accent);color:var(--paper);}
+  img{display:block;max-width:100%;}
+
+  .eyebrow{font-family:"Hanken Grotesk",sans-serif;font-weight:500;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-soft);display:inline-flex;align-items:center;gap:12px;}
+  .eyebrow::before{content:"";width:7px;height:7px;background:var(--accent);display:inline-block;}
+  .soft{color:var(--ink-soft);}
+  .pills{display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+  .pill{padding:6px 15px;border:1px solid var(--ink);border-radius:40px;font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;}
+  .status{padding:6px 14px;border-radius:40px;background:var(--accent);color:var(--paper);font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;}
+  .year-badge{display:inline-flex;padding:6px 18px;border:1px solid var(--line);border-radius:40px;font-family:"Hanken Grotesk",sans-serif;font-size:12px;letter-spacing:.12em;color:var(--ink-soft);}
+  .dotrow{display:flex;gap:8px;}.dotrow span{width:14px;height:14px;border-radius:50%;}
+
+  .topbar{position:sticky;top:0;z-index:40;background:rgba(247,247,247,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;}
+  .brand{font-family:"Cormorant Garamond",serif;font-size:25px;font-weight:500;cursor:pointer;background:none;border:0;color:inherit;}
+  .brand sup{font-size:.5em;vertical-align:super;}
+  .nav{display:flex;gap:30px;font-family:"Hanken Grotesk",sans-serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;}
+  .nav a{text-decoration:none;color:var(--ink-soft);transition:color .25s;}
+  .nav a:hover,.nav a.active{color:var(--ink);}
+  @media(max-width:600px){.nav{gap:16px;font-size:10px;}}
+
+  .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(40px,7vw,100px);align-items:center;padding:clamp(72px,12vh,150px) 0 clamp(80px,13vh,160px);}
+  @media(max-width:840px){.hero{grid-template-columns:1fr;gap:54px;}}
+  .hero .eyebrow{margin-bottom:34px;}
+  .hero .name{font-family:"Cormorant Garamond",serif;font-weight:400;font-size:clamp(64px,12vw,150px);line-height:.9;letter-spacing:-.01em;margin:0;}
+  .hero .name em{font-style:italic;color:var(--accent);}
+  .hero .thesis{font-family:"Cormorant Garamond",serif;font-size:clamp(22px,3vw,33px);line-height:1.4;margin:34px 0 0;max-width:18em;}
+  .hero .thesis em{font-style:italic;}
+  .hero .sub{margin-top:24px;font-size:17px;color:var(--ink-soft);max-width:30em;}
+  .scroll-cue{margin-top:46px;display:inline-flex;flex-direction:column;gap:9px;font-family:"Hanken Grotesk",sans-serif;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);}
+  .scroll-cue .dn{font-size:20px;animation:bob 2.4s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+  .framed{position:relative;aspect-ratio:16/10;max-width:500px;width:100%;justify-self:end;}
+  .framed .fr{position:absolute;inset:0;border:2px solid;}
+  .framed .fr.red{border-color:var(--accent);transform:translate(-20px,-20px);}
+  .framed .fr.blue{border-color:var(--cobalt);transform:translate(-10px,-10px);}
+  .framed img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--paper-2);}
+
+  .section{padding:clamp(90px,15vh,180px) 0;border-top:1px solid var(--line);}
+  .sec-head{margin-bottom:clamp(48px,7vh,80px);}
+  .sec-head h2{font-family:"Cormorant Garamond",serif;font-weight:400;font-size:clamp(34px,6vw,60px);margin:14px 0 0;line-height:1;}
+  .sec-head h2 .zh{font-family:"Noto Serif SC",serif;font-size:.42em;color:var(--ink-soft);margin-left:14px;font-weight:400;}
+
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(36px,6vw,80px);}
+  @media(max-width:760px){.about-grid{grid-template-columns:1fr;gap:40px;}}
+  .about-grid p{margin:0 0 22px;font-size:19px;}.about-grid p:last-child{margin-bottom:0;}
+  .quote-block{border-left:2px solid var(--accent);padding-left:28px;}
+  .quote-block blockquote{margin:0;font-family:"Cormorant Garamond",serif;font-style:italic;font-size:clamp(24px,3.2vw,34px);line-height:1.35;}
+  .quote-block .by{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-top:20px;}
+
+  .cv{margin-top:clamp(56px,8vh,96px);}
+  .cv-now{display:flex;align-items:baseline;gap:20px;flex-wrap:wrap;margin-bottom:40px;padding-bottom:32px;border-bottom:1px solid var(--line);}
+  .cv-now .big{font-family:"Cormorant Garamond",serif;font-size:clamp(28px,4.4vw,44px);}
+  .cv-now .tag{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+  .cv-now .tag.soft{color:var(--ink-soft);}
+  .cv-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;}
+  @media(max-width:820px){.cv-cols{grid-template-columns:repeat(2,1fr);gap:30px;}}
+  @media(max-width:440px){.cv-cols{grid-template-columns:1fr;}}
+  .cv-col .yr{font-family:"Cormorant Garamond",serif;font-size:30px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px;}
+  .cv-col .role{font-weight:500;margin:0 0 2px;font-size:17px;}
+  .cv-col .org{font-size:15px;color:var(--ink-soft);margin:0;}
+
+  .ghostband{overflow:hidden;padding:clamp(40px,7vh,90px) 0 0;}
+  .ghost{font-family:"Hanken Grotesk",sans-serif;font-weight:800;font-size:clamp(110px,28vw,380px);line-height:.8;white-space:nowrap;text-align:center;color:transparent;-webkit-text-stroke:1.4px var(--ink);user-select:none;margin:0;}
+
+  .works{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(34px,4.5vw,64px) clamp(26px,3.2vw,44px);}
+  @media(max-width:880px){.works{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:540px){.works{grid-template-columns:1fr;}}
+  .work{cursor:pointer;border:0;background:none;padding:0;text-align:left;font:inherit;color:inherit;width:100%;}
+  .work .thumb{aspect-ratio:4/5;background:var(--paper-2);border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;transition:transform .5s ease;}
+  .work .thumb img{width:100%;height:100%;object-fit:contain;padding:6%;}
+  .work:hover .thumb{transform:translateY(-7px);}
+  .work .ph{width:100%;height:100%;display:flex;align-items:flex-end;padding:22px;color:#fff;font-family:"Cormorant Garamond",serif;font-size:28px;}
+  .work .w-no{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.18em;color:var(--accent);margin:18px 0 6px;}
+  .work h3{font-family:"Cormorant Garamond",serif;font-weight:500;font-size:25px;margin:0;line-height:1.1;}
+  .work .cat{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px;display:flex;align-items:center;gap:10px;}
+  .work .cat .go{margin-left:auto;transition:transform .35s;}
+  .work:hover .cat .go{transform:translateX(5px);}
+
+  footer{border-top:1px solid var(--line);padding:clamp(64px,10vh,110px) 0 60px;}
+  .foot-cta{font-family:"Cormorant Garamond",serif;font-size:clamp(30px,6vw,64px);line-height:1.1;margin:0 0 50px;}
+  .foot-cta a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--line);}
+  .foot-top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:30px;}
+  @media(max-width:760px){.foot-top{grid-template-columns:1fr 1fr;gap:30px;}}
+  .foot-brand .mark{display:flex;gap:5px;margin-bottom:14px;}
+  .foot-brand .mark span{width:9px;height:9px;border-radius:50%;background:var(--ink);}
+  .foot-brand .mark span:nth-child(2){background:var(--accent);}.foot-brand .mark span:nth-child(3){background:var(--cobalt);}
+  .foot-brand .bn{font-family:"Cormorant Garamond",serif;font-size:30px;}
+  .foot-brand .made{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);}
+  .foot-col h5{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 12px;}
+  .foot-col a,.foot-col p{font-size:15px;margin:0 0 7px;display:block;text-decoration:none;}
+  .foot-col a:hover{color:var(--accent);}
+  .foot-bottom{display:flex;justify-content:space-between;margin-top:56px;padding-top:22px;border-top:1px solid var(--line);font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);flex-wrap:wrap;gap:12px;}
+
+  .proj-page{display:none;}.proj-page.active{display:block;}#view-main.hidden{display:none;}
+  .back{display:inline-flex;align-items:center;gap:10px;font-family:"Hanken Grotesk",sans-serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);background:none;border:0;cursor:pointer;padding:0;margin:clamp(40px,7vh,80px) 0 0;}
+  .back:hover{color:var(--accent);}
+  .ph-head{padding:clamp(28px,5vh,52px) 0 0;}
+  .ph-head .accent-bar{display:flex;gap:9px;margin:18px 0;}.ph-head .accent-bar span{width:18px;height:18px;border-radius:50%;}
+  .ph-head h1{font-family:"Cormorant Garamond",serif;font-weight:400;font-size:clamp(42px,8vw,86px);line-height:1;margin:0;}
+  .ph-head h1:focus{outline:none;}
+  .ph-head .zh{font-family:"Noto Serif SC",serif;font-weight:500;font-size:clamp(18px,2.6vw,24px);margin:14px 0 0;}
+  .ph-meta{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-top:28px;padding-bottom:30px;border-bottom:1px solid var(--line);}
+  .ph-meta .left{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .ph-body{padding:clamp(44px,7vh,80px) 0 0;}
+  .lead{font-size:clamp(19px,2.4vw,23px);line-height:1.7;max-width:42em;margin:0 0 clamp(40px,6vh,72px);}
+  .fig{margin:0 0 clamp(40px,6vh,72px);}
+  .fig img{width:100%;border:1px solid var(--line);background:var(--paper-2);}
+  .fig figcaption{font-size:15px;color:var(--ink-soft);margin-top:14px;}
+  .fig figcaption .en{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:5px;}
+  .fig-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}@media(max-width:680px){.fig-2{grid-template-columns:1fr;}}
+  .narr{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin:0 0 clamp(40px,6vh,72px);}
+  @media(max-width:720px){.narr{grid-template-columns:1fr;gap:28px;}}
+  .narr .n-lab{font-family:"Hanken Grotesk",sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+  .narr h4{font-family:"Cormorant Garamond",serif;font-weight:500;font-size:23px;margin:0 0 8px;}
+  .narr p{font-size:16px;color:var(--ink-soft);margin:0;}
+  .slot{aspect-ratio:16/9;background:var(--paper-2);border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink-soft);text-align:center;}
+  .slot .fn{font-family:"Hanken Grotesk",sans-serif;font-size:12px;letter-spacing:.08em;}
+  .slot .hint{font-family:"Hanken Grotesk",sans-serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.7;margin-top:6px;}
+  .proj-nav{display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:clamp(40px,6vh,72px);padding-top:30px;font-family:"Hanken Grotesk",sans-serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;}
+  .proj-nav button{background:none;border:0;cursor:pointer;color:var(--ink-soft);font:inherit;letter-spacing:inherit;text-transform:inherit;}
+  .proj-nav button:hover{color:var(--accent);}
+
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .9s ease,transform .9s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none;}html{scroll-behavior:auto;}.scroll-cue .dn{animation:none;}}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <button class="brand" onclick="showMain()" aria-label="返回首页">Kero<sup>®</sup></button>
+  <nav class="nav"><a href="#about">About</a><a href="#work">Work</a><a href="#contact">Contact</a></nav>
+</div></div>
+
+<div id="view-main">
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <div class="eyebrow reveal">UI &amp; UX Designer · Shanghai</div>
+        <h1 class="name reveal"><em>Kero.</em></h1>
+        <p class="thesis reveal">好的设计不是炫技，<br>而是替用户把<em>复杂的事</em>想明白。</p>
+        <p class="sub reveal">十年 UI &amp; UX，近三年深耕已上线的 AI 产品——从用户研究、设计系统、交互到前端对接的完整链路。</p>
+        <span class="scroll-cue reveal">Scroll<span class="dn">↓</span></span>
+      </div>
+      <div class="framed reveal">
+        <div class="fr red"></div><div class="fr blue"></div>
+        <img src="assets/hero/art.jpg" alt="封面主色块插画">
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section class="section" id="about" style="border-top:0;padding-top:clamp(20px,3vh,40px);">
+      <div class="sec-head reveal"><div class="eyebrow">About · 关于我</div><h2>A designer who thinks in products<span class="zh">不止画界面，更想清楚产品</span></h2></div>
+      <div class="about-grid">
+        <div class="reveal">
+          <p>我是 Kero，上海，十年 UI &amp; UX 设计师。早期做企业内部 CRM 与智慧城市平台，中期以独立设计师身份做品牌官网与移动端，近三年专注于已上线的 AI 产品设计。</p>
+          <p>我习惯从用户的真实场景出发：一对一访谈、用户群运营、把说不清的抱怨提炼成可执行的设计命题；再把大目标拆成有优先级的子任务，基于设计系统产出、对接前端实现、用结果驱动下一轮迭代。我并非 PM，却深度参与产品规划——因为设计的起点，是先把问题想对。</p>
+        </div>
+        <div class="quote-block reveal">
+          <blockquote>我不替用户做决定。<br>我把他们说不清的需求，<br>翻译成一眼就懂的界面。</blockquote>
+          <div class="by">— 设计观 · Kero</div>
+        </div>
+      </div>
+      <div class="cv">
+        <div class="cv-now reveal">
+          <span class="big">AI Product Designer</span>
+          <span class="tag">2023 — Now · 已上线 AI 产品 · 全链路设计</span>
+          <span class="tag soft">+ 证书 · AI Agent 在线课程</span>
+        </div>
+        <div class="cv-cols reveal">
+          <div class="cv-col"><div class="yr">2017</div><p class="role">独立设计师</p><p class="org">个人 · 交互设计 · UI &amp; UX</p></div>
+          <div class="cv-col"><div class="yr">2015</div><p class="role">UI &amp; UX 设计师</p><p class="org">中安消股份 · 企业内部系统</p></div>
+          <div class="cv-col"><div class="yr">2013</div><p class="role">UI 设计师</p><p class="org">中科院高研院 · 智慧城市平台</p></div>
+          <div class="cv-col"><div class="yr">2011</div><p class="role">平面设计师</p><p class="org">捷步士 · 手机 APP 研发</p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="ghostband"><p class="ghost reveal">WORK</p></div>
+
+  <div class="wrap">
+    <section class="section" id="work" style="border-top:0;padding-top:clamp(28px,4vh,52px);">
+      <div class="sec-head reveal"><div class="eyebrow">Selected · 精选作品</div><h2>Six projects, ten years<span class="zh">六个项目，十年</span></h2></div>
+      <div class="works">
+        <button class="work reveal" onclick="showProject('onestory')" aria-label="查看项目 OneStory">
+          <div class="thumb"><div class="ph" style="background:linear-gradient(150deg,var(--c-forest),var(--c-navy));">OneStory</div></div>
+          <div class="w-no">01</div><h3>OneStory · AI 平台</h3><div class="cat">AI · Product<span class="go">→</span></div>
+        </button>
+        <button class="work reveal" onclick="showProject('ai-art')" aria-label="查看项目 小黑猫 × 名画">
+          <div class="thumb"><div class="ph" style="background:linear-gradient(150deg,var(--c-gold),var(--ink));">Cat &amp; Canon</div></div>
+          <div class="w-no">02</div><h3>小黑猫 × 名画</h3><div class="cat">AI · Experiment<span class="go">→</span></div>
+        </button>
+        <button class="work reveal" onclick="showProject('wine-web')" aria-label="查看项目 Robert Geddes 官网">
+          <div class="thumb"><img src="assets/wine-web/cover.jpg" alt="Robert Geddes 官网"></div>
+          <div class="w-no">03</div><h3>Robert Geddes</h3><div class="cat">Website · Brand<span class="go">→</span></div>
+        </button>
+        <button class="work reveal" onclick="showProject('wine-app')" aria-label="查看项目 Geddes App">
+          <div class="thumb"><img src="assets/wine-app/cover.jpg" alt="Robert Geddes App"></div>
+          <div class="w-no">04</div><h3>Geddes App</h3><div class="cat">Mobile · UI/UX<span class="go">→</span></div>
+        </button>
+        <button class="work reveal" onclick="showProject('mini')" aria-label="查看项目 Island Queue 小程序">
+          <div class="thumb"><img src="assets/mini/cover.jpg" alt="排队小程序"></div>
+          <div class="w-no">05</div><h3>Island Queue</h3><div class="cat">Mini-Program<span class="go">→</span></div>
+        </button>
+        <button class="work reveal" onclick="showProject('crm')" aria-label="查看项目 Guardforce CRM">
+          <div class="thumb"><img src="assets/crm/platform.jpg" alt="Guardforce CRM"></div>
+          <div class="w-no">06</div><h3>Guardforce CRM</h3><div class="cat">System · B-end<span class="go">→</span></div>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <footer id="contact">
+    <div class="wrap">
+      <p class="foot-cta reveal">让我们聊聊 ——<br><a href="mailto:xu_linkeroro@hotmail.com">开始对话 ↗</a></p>
+      <div class="foot-top reveal">
+        <div class="foot-brand"><div class="mark"><span></span><span></span><span></span></div><div class="bn">Kero</div><div class="made">UI &amp; UX Designer · Shanghai</div></div>
+        <div class="foot-col"><h5>Contact</h5><a href="mailto:xu_linkeroro@hotmail.com">xu_linkeroro@hotmail.com</a></div>
+        <div class="foot-col"><h5>Elsewhere</h5><a href="https://kero_xu.dribbble.com" target="_blank" rel="noopener">Dribbble</a><a href="https://onestory.art/home" target="_blank" rel="noopener">OneStory ↗</a></div>
+        <div class="foot-col"><h5>Index</h5><a href="#about">About</a><a href="#work">Work</a></div>
+      </div>
+      <div class="foot-bottom"><span>© 2026 Kero</span><span>Made with care</span></div>
+    </div>
+  </footer>
+</div>
+
+<article class="proj-page" id="p-onestory"><div class="wrap">
+  <button class="back" onclick="showMain()">← 返回作品 / Back</button>
+  <div class="ph-head"><div class="eyebrow">Featured · 重头戏 · 01</div>
+    <div class="accent-bar"><span style="background:var(--c-forest)"></span><span style="background:var(--c-navy)"></span><span style="background:var(--c-gold)"></span></div>
+    <h1 tabindex="-1">OneStory</h1><p class="zh">AI 内容创作平台 · 全链路设计</p>
+    <div class="ph-meta"><div class="left"><span class="status">案例整理中 · In progress</span><span class="year-badge">2023 — Now · 线上产品</span></div><div class="pills"><span class="pill">AI</span><span class="pill">Product</span><span class="pill">UX</span></div></div>
+  </div>
+  <div class="ph-body">
+    <p class="lead">已上线的 AI 内容创作平台（onestory.art）。我负责从用户研究、设计系统、交互设计到前端对接的完整链路，并兼任用户群运营与产品规划共建。这是我近三年最核心的工作，也是这份作品集的重头戏——完整案例与交互演示整理中。</p>
+    <div class="fig"><div class="slot"><div><div class="fn">assets/onestory/hero.jpg</div><div class="hint">将放入主界面截图 · 16:9</div></div></div>
+      <figcaption><span class="en">Overview · 概览</span>把 onestory.art 的首页与核心创作流程截图放进 assets/onestory/——每张图都是独立文件，换图不动版式。</figcaption></div>
+    <div class="narr">
+      <div><div class="n-lab">Problem · 问题</div><h4>需求藏在抱怨里</h4><p>用户说不清要什么，只反馈"不好用"。我通过一对一访谈与用户群运营反复提炼，把模糊抱怨翻译成可执行的设计命题。</p></div>
+      <div><div class="n-lab">Thinking · 思路</div><h4>拆解与优先级</h4><p>把大目标拆成设计子任务，按价值与成本排序；基于设计系统产出，保证高频迭代里的一致性与速度。</p></div>
+      <div><div class="n-lab">Solution · 落地</div><h4>选型到对接</h4><p>选取合适的前端库实现交互效果，与开发对接还原，再以结果测试驱动下一轮迭代。</p></div>
+    </div>
+    <div class="fig fig-2"><div class="slot"><div><div class="fn">assets/onestory/flow.jpg</div><div class="hint">流程 / 交互</div></div></div><div class="slot"><div><div class="fn">assets/onestory/system.jpg</div><div class="hint">设计系统</div></div></div></div>
+    <div class="proj-nav"><button onclick="showMain()">← 全部作品</button><button onclick="showProject('ai-art')">下一个 · 小黑猫 × 名画 →</button></div>
+  </div>
+</div></article>
+
+<article class="proj-page" id="p-ai-art"><div class="wrap">
+  <button class="back" onclick="showMain()">← 返回作品 / Back</button>
+  <div class="ph-head"><div class="eyebrow">Experiment · 02</div>
+    <div class="accent-bar"><span style="background:var(--c-gold)"></span><span style="background:var(--ink)"></span></div>
+    <h1 tabindex="-1">Cat &amp; Canon</h1><p class="zh">AI 实验 · 小黑猫 × 名画</p>
+    <div class="ph-meta"><div class="left"><span class="status">案例整理中 · In progress</span><span class="year-badge">进行中 · Ongoing</span></div><div class="pills"><span class="pill">AI</span><span class="pill">Creative</span></div></div>
+  </div>
+  <div class="ph-body">
+    <p class="lead">一个实验性系列——把一只小黑猫"放进"世界名画，看会发生怎样的化学反应。重点不是成品，而是过程：图片/视频生成、提示词思路、模型与工具的取舍。AI 能生成画面，但生成不了"为什么这么判断"，这正是我想展示的部分。</p>
+    <div class="fig fig-2"><div class="slot"><div><div class="fn">assets/ai-art/before-after.jpg</div><div class="hint">前后对比 · 拖动</div></div></div><div class="slot"><div><div class="fn">assets/ai-art/process.jpg</div><div class="hint">提示词 / 模型注解</div></div></div></div>
+    <div class="narr">
+      <div><div class="n-lab">Prompt · 提示词</div><h4>构图与意图</h4><p>把"小黑猫融入原画"拆成构图、光线、风格一致性几条提示，逐版收敛。</p></div>
+      <div><div class="n-lab">Model · 模型</div><h4>工具取舍</h4><p>标注每张用到的生成 / 视频模型与工具，以及为什么选它。</p></div>
+      <div><div class="n-lab">Iterate · 迭代</div><h4>从几版到定稿</h4><p>展示淘汰版本与定稿差异，呈现判断过程。</p></div>
+    </div>
+    <div class="proj-nav"><button onclick="showProject('onestory')">← 上一个 · OneStory</button><button onclick="showProject('wine-web')">下一个 · Robert Geddes →</button></div>
+  </div>
+</div></article>
+
+<article class="proj-page" id="p-wine-web"><div class="wrap">
+  <button class="back" onclick="showMain()">← 返回作品 / Back</button>
+  <div class="ph-head"><div class="eyebrow">Website · 03</div><div class="accent-bar"><span style="background:var(--c-oxblood)"></span></div>
+    <h1 tabindex="-1">Robert Geddes</h1><p class="zh">澳洲葡萄酒大师 · 中国工作室官网</p>
+    <div class="ph-meta"><div class="left"><span class="year-badge">2018</span></div><div class="pills"><span class="pill">Website</span><span class="pill">Brand</span><span class="pill">UI/UX</span></div></div>
+  </div>
+  <div class="ph-body">
+    <p class="lead">Robert Geddes MW 是国际知名葡萄酒大师，30 余年行业经验，身兼作家、顾问、评委与教育者，2017 年在上海成立 RGMW 中国工作室。我负责打造品牌个性鲜明的官方网站，支持线上浏览与购买葡萄酒课程、活动。配色取酒红 / 灰 / 黑，呼应葡萄酒的醇厚气质。</p>
+    <div class="fig"><img src="assets/wine-web/cover.jpg" alt="官网首页"><figcaption><span class="en">Home · 首页</span>品牌主视觉与课程入口。</figcaption></div>
+    <div class="fig"><img src="assets/wine-web/course.jpg" alt="课程详情页"><figcaption><span class="en">Course · 课程详情</span>课程详情与预订流程，强调清晰的信息层级与购买引导。</figcaption></div>
+    <div class="proj-nav"><button onclick="showProject('ai-art')">← 上一个</button><button onclick="showProject('wine-app')">下一个 · Geddes App →</button></div>
+  </div>
+</div></article>
+
+<article class="proj-page" id="p-wine-app"><div class="wrap">
+  <button class="back" onclick="showMain()">← 返回作品 / Back</button>
+  <div class="ph-head"><div class="eyebrow">Mobile · 04</div><div class="accent-bar"><span style="background:var(--c-oxblood)"></span><span style="background:var(--c-gold)"></span></div>
+    <h1 tabindex="-1">Geddes App</h1><p class="zh">红酒大师 · 手机 App &amp; 小程序</p>
+    <div class="ph-meta"><div class="left"><span class="year-badge">2018</span></div><div class="pills"><span class="pill">App</span><span class="pill">Mobile</span><span class="pill">Mini-Program</span></div></div>
+  </div>
+  <div class="ph-body">
+    <p class="lead">为手机端设计的展示界面，从首页、课程板块到直播互动几个核心功能入手。背景取红酒倒入杯中的高清照片处理而成，以红酒的色泽与流动感传达品牌身份，引人注目。</p>
+    <div class="fig"><img src="assets/wine-app/cover.jpg" alt="App 概念界面"><figcaption><span class="en">Concept · 风格概念</span>App Store 风格宣传界面：首页 + 课程板块 + 直播互动。</figcaption></div>
+    <div class="fig"><img src="assets/wine-app/flow.jpg" alt="核心流程界面"><figcaption><span class="en">Flow · 核心流程</span>浏览、推荐与互动的关键界面。</figcaption></div>
+    <div class="proj-nav"><button onclick="showProject('wine-web')">← 上一个</button><button onclick="showProject('mini')">下一个 · Island Queue →</button></div>
+  </div>
+</div></article>
+
+<article class="proj-page" id="p-mini"><div class="wrap">
+  <button class="back" onclick="showMain()">← 返回作品 / Back</button>
+  <div class="ph-head"><div class="eyebrow">Mini-Program · 05</div><div class="accent-bar"><span style="background:var(--c-vermilion)"></span><span style="background:var(--c-forest)"></span></div>
+    <h1 tabindex="-1">Island Queue</h1><p class="zh">排队小程序 · 创意探索</p>
+    <div class="ph-meta"><div class="left"><span class="year-badge">2020</span></div><div class="pills"><span class="pill">Mini-Program</span><span class="pill">UI/UX</span><span class="pill">Creative</span></div></div>
+  </div>
+  <div class="ph-body">
+    <p class="lead">2020 年《集合啦，动物森友会》爆火，玩家在网上交流方案、排队"卖大头菜"。我设计了一款在手机上查看图鉴、交友、卖菜的排队小程序——画面简洁干净、操作轻量，色彩与主题本身契合。</p>
+    <div class="fig"><img src="assets/mini/cover.jpg" alt="小程序界面"><figcaption><span class="en">Screens · 界面</span>完善护照 / 艺术图鉴 / 详情页。</figcaption></div>
+    <div class="fig"><img src="assets/mini/queue.jpg" alt="排队流程"><figcaption><span class="en">Queue · 排队流程</span>排队列表与上岛流程，轻量直接。</figcaption></div>
+    <div class="proj-nav"><button onclick="showProject('wine-app')">← 上一个</button><button onclick="showProject('crm')">下一个 · Guardforce CRM →</button></div>
+  </div>
+</div></article>
+
+<article class="proj-page" id="p-crm"><div class="wrap">
+  <button class="back" onclick="showMain()">← 返回作品 / Back</button>
+  <div class="ph-head"><div class="eyebrow">System · 06</div><div class="accent-bar"><span style="background:var(--c-navy)"></span></div>
+    <h1 tabindex="-1">Guardforce CRM</h1><p class="zh">香港卫安 · 安保运营平台 · B 端</p>
+    <div class="ph-meta"><div class="left"><span class="year-badge">2016 — 2018</span></div><div class="pills"><span class="pill">System</span><span class="pill">B-end UX</span><span class="pill">Website</span></div></div>
+  </div>
+  <div class="ph-body">
+    <p class="lead">香港卫安安保运营平台，助力集团对多类型业务统一管理、统一运营：方便查看业务服务详情与费用、把合作伙伴的新业务整合进统一体系，并提供灵活的扩展机制。这是体现我 B 端产品与交互思维的项目。</p>
+    <div class="narr">
+      <div><div class="n-lab">Problem · 问题</div><h4>复杂表单难编辑</h4><p>海量门店押运数据与多级审批流，传统表单难以高效编辑与追踪状态。</p></div>
+      <div><div class="n-lab">Thinking · 思路</div><h4>先梳理关键问题</h4><p>从"如何识别漏斗时间、如何计算成交率、如何随时了解用户路径"等真实问题切入，拆解需求。</p></div>
+      <div><div class="n-lab">Solution · 落地</div><h4>可视化审批流</h4><p>把审批流做成可视化时间线，复杂表单支持就地编辑，押运车分配等高频操作效率提升。</p></div>
+    </div>
+    <div class="fig"><img src="assets/crm/approval.jpg" alt="审批流可视化"><figcaption><span class="en">Approval · 审批流</span>销售机会审批流可视化——状态、角色、节点一目了然。</figcaption></div>
+    <div class="fig"><img src="assets/crm/discovery.jpg" alt="需求关键词"><figcaption><span class="en">Discovery · 需求拆解</span>"解决问题的关键词"——把模糊的业务诉求拆成可设计的命题。</figcaption></div>
+    <div class="fig"><img src="assets/crm/platform.jpg" alt="网页平台展示"><figcaption><span class="en">Platform · 平台</span>网页端整体展示。</figcaption></div>
+    <div class="proj-nav"><button onclick="showProject('mini')">← 上一个</button><button onclick="showMain()">全部作品 →</button></div>
+  </div>
+</div></article>
+
+<script>
+  var revObserver;
+  function initReveal(scope){
+    var els=(scope||document).querySelectorAll('.reveal:not(.in)');
+    if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});return;}
+    if(!revObserver){revObserver=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');revObserver.unobserve(e.target);}});},{threshold:.1});}
+    els.forEach(function(e){revObserver.observe(e);});
+  }
+  function showProject(id){
+    document.getElementById('view-main').classList.add('hidden');
+    document.querySelectorAll('.proj-page').forEach(function(p){p.classList.remove('active');});
+    var el=document.getElementById('p-'+id);el.classList.add('active');
+    window.scrollTo(0,0);
+    var h=el.querySelector('h1');if(h){h.focus();}
+    initReveal(el);
+  }
+  function showMain(){
+    document.querySelectorAll('.proj-page').forEach(function(p){p.classList.remove('active');});
+    document.getElementById('view-main').classList.remove('hidden');
+    window.scrollTo(0,0);
+  }
+  // 导航高亮
+  (function(){
+    var map={about:0,work:1,contact:2};var links=document.querySelectorAll('.nav a');
+    var secs=['about','work','contact'].map(function(i){return document.getElementById(i);});
+    if('IntersectionObserver' in window){
+      var io=new IntersectionObserver(function(en){en.forEach(function(e){
+        if(e.isIntersecting){links.forEach(function(l){l.classList.remove('active');});
+        var k=e.target.id;if(map[k]!=null)links[map[k]].classList.add('active');}});},{rootMargin:'-45% 0px -50% 0px'});
+      secs.forEach(function(s){if(s)io.observe(s);});
+    }
+  })();
+  initReveal();
+</script>
+</body>
+</html>

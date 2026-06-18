@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eternal Cinema Hall | 永恒回廊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = { theme: { extend: {
+        fontFamily: { serif: ['"Playfair Display"', '"Noto Serif SC"', 'serif'], sans: ['"Inter"', '"HarmonyOS Sans SC"', 'sans-serif'] },
+        colors: { 'cinema-black': '#0a0a0a', 'cinema-gold': '#d4af37', 'cinema-glass': 'rgba(255, 255, 255, 0.08)' }
+      } } }
+    </script>
+    <style>
+      body { margin: 0; background: #050505; color: white; overflow: hidden; font-family: 'Inter','Noto Serif SC',sans-serif; }
+      .glass-panel { background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+      #boot { position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; background:#050505; color:#d4af37; font-family:monospace; letter-spacing:.3em; text-transform:uppercase; font-size:12px; }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://aistudiocdn.com/react@^19.2.1",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+        "react/": "https://aistudiocdn.com/react@^19.2.1/",
+        "@react-three/fiber": "https://aistudiocdn.com/@react-three/fiber@^9.4.2",
+        "@react-three/drei": "https://aistudiocdn.com/@react-three/drei@^10.7.7",
+        "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.25",
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
+        "three": "https://aistudiocdn.com/three@^0.181.2"
+      }
+    }
+    </script>
+    <!-- 浏览器内 TS/JSX 转译（仅为单文件预览之用；正式开发可用原项目 npm run dev） -->
+    <script>
+      // 若要启用 AI「策展新展」，把你的 Gemini API Key 填入下面引号内即可（不填则用内置 16 部电影，体验完整）：
+      window.process = { env: { API_KEY: "" } };
+    </script>
+    <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="boot">Loading Universe…</div>
+    <div id="root"></div>
+    <script type="text/babel" data-type="module" data-presets="typescript,react">
+import React, { useState, useEffect, Suspense, useCallback, useRef, useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Float, Html, Cylinder, Box, Sphere, Torus, Cone, Capsule, Icosahedron, Octahedron, Environment, Stars, SpotLight, Text, Sparkles, useProgress } from '@react-three/drei';
+import * as THREE from 'three';
+import { GoogleGenAI, Type } from "@google/genai";
+
+/* ===== constants ===== */
+export const TOTAL_MOVIES = 16;
+export const RADIUS = 8; // Radius of the gallery circle
+
+// Fallback data ensures the app works immediately even without API key or during loading
+export const FALLBACK_MOVIES: MovieArt[] = [
+  {
+    id: 1,
+    title_zh: "花样年华",
+    title_en: "In the Mood for Love",
+    year: 2000,
+    director_zh: "王家卫",
+    director_en: "Wong Kar-wai",
+    core_emotion: { zh: "隐忍", en: "Restraint" },
+    visual_metaphor: { zh: "缭绕在幽暗路灯下的香烟烟雾", en: "Cigarette smoke curling under a dim streetlamp" },
+    key_element: { zh: "旗袍", en: "Qipao" },
+    haiku: {
+      zh: "花期终将尽\n秘密藏于树洞中\n背影不仅是离别",
+      en: "Blossoms fade away\nSecrets hidden in the tree\nParting is silent"
+    },
+    color_palette: ["#A63737", "#2C3E50", "#D4AC0D"],
+    art_note: {
+      zh: "色彩浓郁而压抑，仿佛时间在琥珀中凝固，捕捉了那段无法言说的爱情。",
+      en: "Rich and oppressive colors, as if time is frozen in amber, capturing that unspeakable love."
+    }
+  },
+  {
+    id: 2,
+    title_zh: "2001太空漫游",
+    title_en: "2001: A Space Odyssey",
+    year: 1968,
+    director_zh: "斯坦利·库布里克",
+    director_en: "Stanley Kubrick",
+    core_emotion: { zh: "敬畏", en: "Awe" },
+    visual_metaphor: { zh: "漂浮在无尽虚空中的黑色巨石", en: "A black monolith floating in infinite void" },
+    key_element: { zh: "黑石", en: "Monolith" },
+    haiku: {
+      zh: "星海寂无声\n巨石指引向未来\n人神终相遇",
+      en: "Silent sea of stars\nMonolith guides to future\nMan and god shall meet"
+    },
+    color_palette: ["#000000", "#FFFFFF", "#FF0000"],
+    art_note: {
+      zh: "极简的几何形态与强烈的对比，象征着人类理性的边界与宇宙的未知。",
+      en: "Minimalist geometry and strong contrast symbolize the boundary of human reason and the unknown universe."
+    }
+  },
+  {
+    id: 3,
+    title_zh: "千与千寻",
+    title_en: "Spirited Away",
+    year: 2001,
+    director_zh: "宫崎骏",
+    director_en: "Hayao Miyazaki",
+    core_emotion: { zh: "成长", en: "Growth" },
+    visual_metaphor: { zh: "行驶在茫茫大海上的水上列车", en: "A train traveling on the surface of an endless ocean" },
+    key_element: { zh: "面具", en: "Mask" },
+    haiku: {
+      zh: "名字由于忘\n海上列车去何方\n记得即归途",
+      en: "Names lost in the mist\nWhere does the ocean train go\nMemory is home"
+    },
+    color_palette: ["#4682B4", "#FF6347", "#FFFFFF"],
+    art_note: {
+      zh: "水与倒影的意象贯穿始终，象征着潜意识的净化与自我身份的找回。",
+      en: "The imagery of water and reflection pervades, symbolizing the purification of the subconscious and the retrieval of self-identity."
+    }
+  },
+  {
+    id: 4,
+    title_zh: "银翼杀手2049",
+    title_en: "Blade Runner 2049",
+    year: 2017,
+    director_zh: "丹尼斯·维伦纽瓦",
+    director_en: "Denis Villeneuve",
+    core_emotion: { zh: "孤独", en: "Loneliness" },
+    visual_metaphor: { zh: "橙色沙尘暴中屹立的巨大全息投影", en: "A giant hologram standing amidst an orange dust storm" },
+    key_element: { zh: "木马", en: "Horse" },
+    haiku: {
+      zh: "如雨中之泪\n虚幻记忆亦真实\n寻找生之义",
+      en: "Like tears in the rain\nFalse memories are real too\nSeeking life's meaning"
+    },
+    color_palette: ["#FF8C00", "#008080", "#111111"],
+    art_note: {
+      zh: "浓重的橙色与冷冽的青色对比，构建了一个既荒凉又充满赛博朋克美感的未来废土。",
+      en: "The contrast between heavy orange and cold teal constructs a future wasteland that is both desolate and full of cyberpunk aesthetics."
+    }
+  },
+  {
+    id: 5,
+    title_zh: "布达佩斯大饭店",
+    title_en: "The Grand Budapest Hotel",
+    year: 2014,
+    director_zh: "韦斯·安德森",
+    director_en: "Wes Anderson",
+    core_emotion: { zh: "怀旧", en: "Nostalgia" },
+    visual_metaphor: { zh: "雪山之巅粉色的玩具屋般的建筑", en: "A pink dollhouse-like structure atop a snowy mountain" },
+    key_element: { zh: "蛋糕", en: "Cake" },
+    haiku: {
+      zh: "昨日之世界\n粉色废墟梦一场\n文明的余晖",
+      en: "World of yesterday\nA pink ruin, just a dream\nCivilization's glow"
+    },
+    color_palette: ["#FFC0CB", "#800080", "#8B4513"],
+    art_note: {
+      zh: "通过极致对称的构图与糖果般的色彩，讲述了一个关于逝去时代的成人童话。",
+      en: "Through perfectly symmetrical composition and candy-like colors, it tells an adult fairy tale about a bygone era."
+    }
+  },
+  {
+    id: 6,
+    title_zh: "英雄",
+    title_en: "Hero",
+    year: 2002,
+    director_zh: "张艺谋",
+    director_en: "Zhang Yimou",
+    core_emotion: { zh: "天下", en: "Under Heaven" },
+    visual_metaphor: { zh: "漫天黄叶中两位剑客的对决", en: "Two swordsmen dueling amidst falling yellow leaves" },
+    key_element: { zh: "残剑", en: "Sword" },
+    haiku: {
+      zh: "十步杀一人\n心中无剑天地宽\n红蓝皆是空",
+      en: "Ten steps, one life end\nNo sword in heart, world is wide\nRed and blue are void"
+    },
+    color_palette: ["#FF0000", "#0000FF", "#FFFFFF"],
+    art_note: {
+      zh: "色彩不仅是视觉元素，更是叙事工具，分别代表了谎言、想象与真实。",
+      en: "Color is not just visual, but a narrative tool, representing lies, imagination, and truth respectively."
+    }
+  },
+   {
+    id: 7,
+    title_zh: "星际穿越",
+    title_en: "Interstellar",
+    year: 2014,
+    director_zh: "克里斯托弗·诺兰",
+    director_en: "Christopher Nolan",
+    core_emotion: { zh: "爱与时间", en: "Love & Time" },
+    visual_metaphor: { zh: "巨大的书架连接着过去与未来", en: "A massive bookshelf connecting past and future" },
+    key_element: { zh: "手表", en: "Watch" },
+    haiku: {
+      zh: "时间如浪潮\n爱是唯一可穿越\n幽灵在低语",
+      en: "Time comes like a wave\nLove alone can cross the void\nGhost whispers softly"
+    },
+    color_palette: ["#0B3D91", "#000000", "#D2B48C"],
+    art_note: {
+      zh: "五维空间的视觉化尝试，将抽象的时间实体化，表达了爱超越维度的力量。",
+      en: "An attempt to visualize five-dimensional space, solidifying abstract time to express the power of love transcending dimensions."
+    }
+  },
+  {
+    id: 8,
+    title_zh: "黑客帝国",
+    title_en: "The Matrix",
+    year: 1999,
+    director_zh: "沃卓斯基姐妹",
+    director_en: "The Wachowskis",
+    core_emotion: { zh: "觉醒", en: "Awakening" },
+    visual_metaphor: { zh: "如雨般落下的绿色数字代码", en: "Green digital code falling like rain" },
+    key_element: { zh: "红药丸", en: "Red Pill" },
+    haiku: {
+      zh: "世界是虚幻\n吞下红色药丸后\n直面真荒原",
+      en: "World is illusion\nSwallow the red pill and see\nTruth's desert revealed"
+    },
+    color_palette: ["#00FF00", "#000000", "#333333"],
+    art_note: {
+      zh: "绿色的数字雨与黑色的皮革，定义了赛博朋克的视觉标准，象征着虚幻与现实的边界。",
+      en: "Green digital rain and black leather defined the visual standard of cyberpunk, symbolizing the boundary between illusion and reality."
+    }
+  },
+  {
+    id: 9,
+    title_zh: "爱乐之城",
+    title_en: "La La Land",
+    year: 2016,
+    director_zh: "达米恩·查泽雷",
+    director_en: "Damien Chazelle",
+    core_emotion: { zh: "遗憾", en: "Regret" },
+    visual_metaphor: { zh: "紫色夜空下两盏孤独的路灯", en: "Two lonely streetlights under a purple night sky" },
+    key_element: { zh: "钢琴", en: "Piano" },
+    haiku: {
+      zh: "繁星城之中\n梦想是否只为你\n一曲终离散",
+      en: "City of the stars\nAre you shining just for me\nSong ends, we part ways"
+    },
+    color_palette: ["#6A0DAD", "#FFD700", "#000080"],
+    art_note: {
+      zh: "高饱和度的原色与梦幻的紫色调，致敬了好莱坞黄金时代的歌舞片，同时烘托了梦想与现实的落差。",
+      en: "High-saturation primary colors and dreamy purple tones pay homage to Hollywood's Golden Age musicals while highlighting the gap between dream and reality."
+    }
+  },
+  {
+    id: 10,
+    title_zh: "寄生虫",
+    title_en: "Parasite",
+    year: 2019,
+    director_zh: "奉俊昊",
+    director_en: "Bong Joon-ho",
+    core_emotion: { zh: "阶级", en: "Class" },
+    visual_metaphor: { zh: "暴雨中无尽向下的阶梯", en: "Endless stairs going down in a heavy rainstorm" },
+    key_element: { zh: "山水石", en: "Scholar Stone" },
+    haiku: {
+      zh: "气味越界线\n依附宿主求生存\n雨夜洗不净",
+      en: "Scent crosses the line\nClinging to host to survive\nRain won't wash it clean"
+    },
+    color_palette: ["#4A4A4A", "#8B4513", "#2F4F4F"],
+    art_note: {
+      zh: "垂直空间的运用（半地下室与豪宅）视觉化了阶级差异，那块石头则是虚幻希望的象征。",
+      en: "The use of vertical space (semi-basement vs. mansion) visualizes class disparity, while the stone symbolizes illusory hope."
+    }
+  },
+  {
+    id: 11,
+    title_zh: "瞬息全宇宙",
+    title_en: "Everything Everywhere All At Once",
+    year: 2022,
+    director_zh: "关家永 & 丹尼尔·沙伊纳特",
+    director_en: "Daniels",
+    core_emotion: { zh: "虚无与爱", en: "Nihilism & Love" },
+    visual_metaphor: { zh: "一切都坍缩进黑色的贝果", en: "Everything collapsing into a black bagel" },
+    key_element: { zh: "贝果", en: "Bagel" },
+    haiku: {
+      zh: "万事皆虚无\n在多重宇宙尽头\n哪怕做石头",
+      en: "Nothing matters now\nAt the end of multiverse\nJust be a rock there"
+    },
+    color_palette: ["#000000", "#FFFFFF", "#FF69B4"],
+    art_note: {
+      zh: "极繁主义的视觉轰炸与虚无主义的内核形成对比，最终回归到最简单的一块石头。",
+      en: "Maximalist visual bombardment contrasts with a nihilistic core, ultimately returning to the simplicity of a rock."
+    }
+  },
+  {
+    id: 12,
+    title_zh: "霸王别姬",
+    title_en: "Farewell My Concubine",
+    year: 1993,
+    director_zh: "陈凯歌",
+    director_en: "Chen Kaige",
+    core_emotion: { zh: "痴迷", en: "Obsession" },
+    visual_metaphor: { zh: "后台破碎的镜子映出京剧脸谱", en: "A broken mirror backstage reflecting a Peking Opera mask" },
+    key_element: { zh: "宝剑", en: "Sword" },
+    haiku: {
+      zh: "真虞姬假霸王\n不疯魔便不成活\n戏里戏外生",
+      en: "True Yu, False King here\nNo life without madness deep\nStage and life depend"
+    },
+    color_palette: ["#A52A2A", "#FFD700", "#000000"],
+    art_note: {
+      zh: "红与金的传统配色在历史的灰烬中显得格外刺眼，象征着艺术的永恒与个人的毁灭。",
+      en: "Traditional red and gold colors stand out piercingly amidst the ashes of history, symbolizing the eternity of art and personal destruction."
+    }
+  },
+  {
+    id: 13,
+    title_zh: "阿基拉",
+    title_en: "Akira",
+    year: 1988,
+    director_zh: "大友克洋",
+    director_en: "Katsuhiro Otomo",
+    core_emotion: { zh: "毁灭与重生", en: "Destruction" },
+    visual_metaphor: { zh: "新东京爆炸产生的巨大白色光球", en: "A massive white sphere of light from the Neo-Tokyo explosion" },
+    key_element: { zh: "摩托", en: "Bike" },
+    haiku: {
+      zh: "红色尾灯流\n钢铁都市在崩塌\n力量即诅咒",
+      en: "Red tail lights streaming\nSteel city is collapsing\nPower is a curse"
+    },
+    color_palette: ["#FF0000", "#050505", "#00FFFF"],
+    art_note: {
+      zh: "其标志性的红色摩托车与高楼林立的赛博都市，定义了日本动画的赛博朋克美学。",
+      en: "Its iconic red motorcycle and skyscraper-filled cyber city defined the cyberpunk aesthetic of Japanese animation."
+    }
+  },
+  {
+    id: 14,
+    title_zh: "盗梦空间",
+    title_en: "Inception",
+    year: 2010,
+    director_zh: "克里斯托弗·诺兰",
+    director_en: "Christopher Nolan",
+    core_emotion: { zh: "困惑", en: "Confusion" },
+    visual_metaphor: { zh: "城市街道像纸一样折叠起来", en: "City streets folding up like paper" },
+    key_element: { zh: "陀螺", en: "Totem" },
+    haiku: {
+      zh: "梦中还有梦\n陀螺旋转未曾停\n醒来或是真",
+      en: "Dream within a dream\nThe spinning top never stops\nIs waking up real"
+    },
+    color_palette: ["#708090", "#A9A9A9", "#DAA520"],
+    art_note: {
+      zh: "通过对物理规则的打破（如折叠的城市），视觉化了潜意识的无限可能性。",
+      en: "By breaking physical rules (like folding cities), it visualizes the infinite possibilities of the subconscious."
+    }
+  },
+  {
+    id: 15,
+    title_zh: "楚门的世界",
+    title_en: "The Truman Show",
+    year: 1998,
+    director_zh: "彼得·威尔",
+    director_en: "Peter Weir",
+    core_emotion: { zh: "自由", en: "Freedom" },
+    visual_metaphor: { zh: "船头撞破了画着蓝天的墙壁", en: "A boat bow crashing through a wall painted with blue sky" },
+    key_element: { zh: "出口", en: "Exit Door" },
+    haiku: {
+      zh: "早安与晚安\n虚假天空终破裂\n鞠躬向自由",
+      en: "Good morning, good night\nFalse blue sky finally cracks\nBow to liberty"
+    },
+    color_palette: ["#87CEEB", "#FFFFFF", "#000000"],
+    art_note: {
+      zh: "完美的人造蓝天与尽头的黑色出口形成强烈对比，象征着虚幻的安逸与未知的自由之间的选择。",
+      en: "The contrast between the perfect artificial blue sky and the black exit door symbolizes the choice between illusory comfort and unknown freedom."
+    }
+  },
+  {
+    id: 16,
+    title_zh: "死侍与金刚狼",
+    title_en: "Deadpool & Wolverine",
+    year: 2024,
+    director_zh: "肖恩·利维",
+    director_en: "Shawn Levy",
+    core_emotion: { zh: "混乱中的救赎", en: "Redemption in Chaos" },
+    visual_metaphor: { zh: "破碎的红色玻璃拼凑成的心脏", en: "A heart pieced together from shattered red glass" },
+    key_element: { zh: "钢爪", en: "Claws" },
+    haiku: {
+      zh: "红黑交织影\n不死的荒诞独舞\n破碎中重生",
+      en: "Red and black intertwine\nAbsurd solo dance of undying\nRebirth in the shards"
+    },
+    color_palette: ["#880000", "#F1C40F", "#1A1A1A"],
+    art_note: {
+      zh: "这件作品通过冲突的色彩与破碎的几何体，表现了反英雄内心的混乱与渴望连接的矛盾。",
+      en: "This piece uses conflicting colors and fractured geometry to represent the anti-hero's internal chaos and contradictory longing for connection."
+    }
+  }
+];
+
+/* ===== geminiService ===== */
+// Define the schema for structured output
+const movieSchema: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    movies: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          id: { type: Type.INTEGER },
+          title_zh: { type: Type.STRING },
+          title_en: { type: Type.STRING },
+          year: { type: Type.INTEGER },
+          director_zh: { type: Type.STRING },
+          director_en: { type: Type.STRING },
+          core_emotion: {
+            type: Type.OBJECT,
+            properties: {
+              zh: { type: Type.STRING },
+              en: { type: Type.STRING },
+            },
+            required: ["zh", "en"],
+          },
+          visual_metaphor: {
+            type: Type.OBJECT,
+            properties: {
+              zh: { type: Type.STRING },
+              en: { type: Type.STRING },
+            },
+            required: ["zh", "en"],
+          },
+          key_element: {
+            type: Type.OBJECT,
+            properties: {
+              zh: { type: Type.STRING },
+              en: { type: Type.STRING },
+            },
+            required: ["zh", "en"],
+          },
+          haiku: {
+            type: Type.OBJECT,
+            properties: {
+              zh: { type: Type.STRING },
+              en: { type: Type.STRING },
+            },
+            required: ["zh", "en"],
+          },
+          color_palette: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+          },
+          art_note: {
+            type: Type.OBJECT,
+            properties: {
+              zh: { type: Type.STRING },
+              en: { type: Type.STRING },
+            },
+            required: ["zh", "en"],
+          },
+        },
+        required: ["id", "title_zh", "title_en", "year", "director_zh", "core_emotion", "visual_metaphor", "color_palette", "key_element"],
+      },
+    },
+  },
+  required: ["movies"],
+};
+
+const getClient = () => {
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      console.warn("No API Key found for Gemini.");
+      return null;
+    }
+    return new GoogleGenAI({ apiKey });
+}
+
+export const fetchMovieData = async (): Promise<MovieDataResponse | null> => {
+  const ai = getClient();
+  if (!ai) return null;
+
+  try {
+    const prompt = `
+      You are the curator of "Eternal Cinema Hall".
+      Generate a curated list of 10 unique, visually distinct movies.
+      
+      Requirements:
+      - 10 movies total.
+      - Diverse mix (animation, sci-fi, classics).
+      - NO duplicates from standard blockbusters unless unique.
+      
+      Data Constraints (CRITICAL for speed):
+      - "visual_metaphor": Max 12 words.
+      - "art_note": Max 30 words per language. Concise and poetic.
+      - "key_element": Max 2 words (e.g. "Rose").
+      
+      For each movie, provide:
+      1. Core emotion
+      2. Visual metaphor
+      3. Key element
+      4. Haiku (3 lines)
+      5. Color palette (3 hex)
+      6. Brief Art note
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: movieSchema,
+        temperature: 1.0, // Reduced slightly for speed/stability
+      },
+    });
+
+    const text = response.text;
+    if (!text) return null;
+
+    let data: MovieDataResponse;
+    try {
+        data = JSON.parse(text) as MovieDataResponse;
+    } catch (e) {
+        // Fallback cleanup if the model wraps in markdown
+        const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        data = JSON.parse(cleanedText) as MovieDataResponse;
+    }
+
+    // Assign incremental IDs to ensure order in 3D space
+    if (data.movies) {
+      // We initially give them 1-10
+      data.movies = data.movies.map((m, index) => ({ ...m, id: index + 1 }));
+    }
+    
+    return data;
+
+  } catch (error) {
+    console.error("Failed to fetch from Gemini:", error);
+    return null;
+  }
+};
+
+export const generatePosterImage = async (movie: MovieArt): Promise<string | null> => {
+    const ai = getClient();
+    if (!ai) return null;
+  
+    try {
+      // Prompt optimized for Gemini Image Generation
+      const prompt = `Movie poster for "${movie.title_en}". Visual style: ${movie.visual_metaphor.en}. Minimalist, high quality, 8k, cinematic lighting, artistic composition, textless.`;
+      
+      // Use the proper model for image generation
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: { parts: [{ text: prompt }] },
+        config: {
+          imageConfig: {
+              aspectRatio: '3:4' // Vertical poster ratio
+          }
+        }
+      });
+  
+      // Iterate to find the image part in the response
+      for (const candidate of response.candidates || []) {
+          for (const part of candidate.content?.parts || []) {
+            if (part.inlineData && part.inlineData.data) {
+                return `data:image/png;base64,${part.inlineData.data}`;
+            }
+          }
+      }
+      return null;
+    } catch (e) {
+      console.error("Image Gen Error", e);
+      return null;
+    }
+}
+
+/* ===== Gallery3D ===== */
+interface Gallery3DProps {
+  movies: MovieArt[];
+  scrollPos: number; // 0 to movies.length
+  isDetailsOpen: boolean;
+  onItemClick: (index: number) => void;
+  onRestart: () => void;
+}
+
+const ITEM_SPACING = 8;
+const PATH_WIDTH = 6.5; 
+
+// Analytic path function moved outside to be reusable
+const getPathPoint = (t: number) => {
+  // Sinuous winding path
+  const x = Math.sin(t * 0.5) * 6;
+  const y = Math.sin(t * 0.3) * 1.5; 
+  const z = -t * ITEM_SPACING;
+  return new THREE.Vector3(x, y, z);
+};
+
+// Frame-rate independent damping helper
+const damp = (current: number, target: number, lambda: number, delta: number) => {
+    return THREE.MathUtils.lerp(current, target, 1 - Math.exp(-lambda * delta));
+};
+
+export const Gallery3D: React.FC<Gallery3DProps> = ({ movies, scrollPos, isDetailsOpen, onItemClick, onRestart }) => {
+  const { camera } = useThree();
+  const smoothScroll = useRef(scrollPos);
+  
+  // We store the smoothed look-at vector to prevent rotational jitter
+  const smoothedLookAt = useRef(new THREE.Vector3(0, 0, -20));
+  
+  const cameraGroup = useRef<THREE.Group>(null);
+  const floorRef = useRef<THREE.Mesh>(null);
+  
+  // Get current active color for particles
+  const currentIndex = Math.round(scrollPos);
+  const safeIndex = Math.min(Math.max(currentIndex, 0), movies.length - 1);
+  const activeMovieColor = movies[safeIndex]?.color_palette?.[0] || '#ffffff';
+
+  // Check if we are at the portal (end of list)
+  const isPortal = currentIndex >= movies.length;
+
+  useFrame((state, delta) => {
+    // Cap delta to prevent instability on lag spikes
+    const step = Math.min(delta, 0.1);
+
+    // 1. Smoothly interpolate scroll position using Damping
+    smoothScroll.current = damp(smoothScroll.current, scrollPos, 3, step);
+
+    // 2. Camera Logic
+    // Standard "Corridor" Path Calculation
+    const pathT = smoothScroll.current - 1.2; 
+    const corridorCamPos = getPathPoint(pathT);
+    corridorCamPos.y += 1.5;
+
+    // "Details" Target Calculation
+    const activeIdx = Math.round(scrollPos);
+    const isLeftMovie = activeIdx % 2 === 0;
+    
+    // Calculate the World Position of the active movie
+    const activePathPos = getPathPoint(activeIdx);
+    const activeMovieX = activePathPos.x + (isLeftMovie ? -PATH_WIDTH : PATH_WIDTH);
+
+    // Ideally, we want the movie to appear on the opposite side of the text panel.
+    const detailCamX = isLeftMovie ? (activeMovieX + 3.5) : (activeMovieX - 3.5);
+
+    // Determine target X
+    // If we are at the portal, align to center. 
+    // If details are open and NOT at portal, align to detail view.
+    // Otherwise, standard corridor walk.
+    let targetX = corridorCamPos.x;
+    if (isPortal) {
+        targetX = corridorCamPos.x; // Keep center alignment for portal
+    } else if (isDetailsOpen) {
+        targetX = detailCamX;
+    }
+
+    // Apply Camera Position with Damping
+    camera.position.x = damp(camera.position.x, targetX, 4, step);
+    camera.position.y = damp(camera.position.y, corridorCamPos.y, 4, step);
+    camera.position.z = damp(camera.position.z, corridorCamPos.z, 4, step);
+
+    // 3. Camera LookAt Stabilization
+    const lookT = smoothScroll.current + 3; 
+    const targetLookAt = getPathPoint(lookT);
+    
+    // Add atmospheric sway
+    targetLookAt.x += Math.sin(state.clock.elapsedTime * 0.2) * 2;
+    
+    // When details are open, bias the look target towards the movie to frame it better
+    // Do NOT bias if we are looking at the portal
+    if (isDetailsOpen && !isPortal) {
+        // We gently pull the look target towards the movie horizontal center
+        targetLookAt.x = THREE.MathUtils.lerp(targetLookAt.x, activeMovieX, 0.5);
+    }
+    
+    // Damp the LookAt vector itself to remove rotational jitter
+    smoothedLookAt.current.x = damp(smoothedLookAt.current.x, targetLookAt.x, 3, step);
+    smoothedLookAt.current.y = damp(smoothedLookAt.current.y, targetLookAt.y, 3, step);
+    smoothedLookAt.current.z = damp(smoothedLookAt.current.z, targetLookAt.z, 3, step);
+
+    camera.lookAt(smoothedLookAt.current);
+
+    // 4. Update Light Group to follow camera
+    if (cameraGroup.current) {
+        cameraGroup.current.position.copy(camera.position);
+        cameraGroup.current.lookAt(smoothedLookAt.current);
+    }
+
+    // 5. INFINITE FLOOR LOGIC
+    if (floorRef.current) {
+        floorRef.current.position.set(camera.position.x, -4, camera.position.z);
+    }
+  });
+
+  return (
+    <>
+      <ambientLight intensity={1.0} color="#ffffff" />
+      <Environment preset="city" blur={1} background={false} /> 
+      <Stars radius={150} depth={50} count={3000} factor={4} saturation={0} fade speed={0.5} />
+
+      <group ref={cameraGroup}>
+        <pointLight position={[0, 2, 0]} intensity={3} distance={50} decay={2} color="#fff0dd" />
+        <directionalLight position={[0, 0, -5]} intensity={0.5} color="#ffffff" />
+      </group>
+
+      <mesh 
+        ref={floorRef} 
+        rotation={[-Math.PI / 2, 0, 0]} 
+        position={[0, -4, 0]}
+        raycast={() => null}
+      >
+        <planeGeometry args={[200, 200]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.4} metalness={0.5} envMapIntensity={0.5} />
+      </mesh>
+      
+      <FollowCameraGrid />
+      
+      {/* Extend corridor structure to accommodate portal */}
+      <CorridorStructure length={movies.length + 8} />
+      
+      <AtmosphereParticles targetColor={activeMovieColor} />
+
+      {movies.map((movie, index) => {
+        const centerPos = getPathPoint(index);
+        const isLeft = index % 2 === 0;
+        const xOffset = isLeft ? -PATH_WIDTH : PATH_WIDTH;
+        
+        const nextPos = getPathPoint(index + 0.5);
+        const dummyObj = new THREE.Object3D();
+        dummyObj.position.copy(centerPos);
+        dummyObj.lookAt(nextPos);
+        dummyObj.rotation.y += isLeft ? Math.PI / 4 : -Math.PI / 4;
+        
+        const rot: [number, number, number] = [dummyObj.rotation.x, dummyObj.rotation.y, dummyObj.rotation.z];
+        const moviePos = centerPos.clone();
+        moviePos.x += xOffset;
+
+        const isSelected = Math.round(scrollPos) === index;
+
+        return (
+          <MoviePanel
+            key={movie.id}
+            movie={movie}
+            position={[moviePos.x, moviePos.y, moviePos.z]}
+            rotation={rot}
+            isActive={isSelected}
+            isDetailsOpen={isDetailsOpen}
+            onClick={() => onItemClick(index)}
+            isLeft={isLeft}
+          />
+        );
+      })}
+
+      {/* THE CINEMA GATE */}
+      <PortalDoor 
+        index={movies.length} 
+        onEnter={onRestart} 
+        isActive={isPortal}
+      />
+    </>
+  );
+};
+
+// --- Subcomponents ---
+
+// Generate a procedural halftone/noise texture for the door
+const createHalftoneTexture = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return new THREE.Texture();
+
+    // 1. Fill Black
+    ctx.fillStyle = '#050505';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 2. Add Noise/Dust
+    for (let i = 0; i < 5000; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const size = Math.random() * 1.5;
+        const opacity = Math.random() * 0.1;
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 3. Add Halftone Grid Pattern
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+    const spacing = 4;
+    for (let y = 0; y < 512; y += spacing) {
+        for (let x = 0; x < 512; x += spacing) {
+             if ((x + y) % (spacing * 2) === 0) {
+                 ctx.fillRect(x, y, 1, 1);
+             }
+        }
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+};
+
+const PortalDoor = ({ index, onEnter, isActive }: { index: number, onEnter: () => void, isActive: boolean }) => {
+    const pos = getPathPoint(index);
+    const nextPos = getPathPoint(index + 1);
+    
+    // Orient the portal group to face the path direction
+    const dummy = new THREE.Object3D();
+    dummy.position.copy(pos);
+    dummy.lookAt(nextPos);
+    
+    const groupRef = useRef<THREE.Group>(null);
+    const { camera } = useThree();
+    const [visiblityOpacity, setVisibilityOpacity] = useState(0);
+
+    // Generate texture once
+    const noiseTexture = useMemo(() => createHalftoneTexture(), []);
+
+    useFrame(() => {
+        if (!groupRef.current) return;
+        
+        // Calculate distance from camera to the door
+        const dist = camera.position.distanceTo(groupRef.current.position);
+        
+        const fadeStart = 25;
+        const fadeEnd = 8; // Slightly closer fade end
+        
+        // Linear interpolation for opacity
+        const opacity = THREE.MathUtils.clamp(1 - (dist - fadeEnd) / (fadeStart - fadeEnd), 0, 1);
+        
+        if (Math.abs(opacity - visiblityOpacity) > 0.05) {
+            setVisibilityOpacity(opacity);
+        }
+
+        groupRef.current.visible = opacity > 0.01;
+
+        groupRef.current.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                const material = child.material as THREE.MeshStandardMaterial;
+                if (material) {
+                    material.transparent = true;
+                    // Cap opacity at 0.95 to keep the transparent/ghostly feel user requested
+                    material.opacity = opacity * 0.95; 
+                }
+            }
+        });
+    });
+
+    return (
+        <group 
+            ref={groupRef}
+            position={[pos.x, pos.y + 1.5, pos.z]} 
+            rotation={[dummy.rotation.x, dummy.rotation.y, dummy.rotation.z]} 
+        >
+             {/* Rotate 180 deg to face camera */}
+             <group rotation={[0, Math.PI, 0]}>
+                
+                {/* 1. The Monolith Doors with Texture */}
+                {/* Left Panel */}
+                <group position={[-1.4, 0, 0.2]}>
+                    <mesh>
+                        <boxGeometry args={[2.5, 7.5, 0.2]} />
+                        <meshStandardMaterial 
+                            map={noiseTexture}
+                            color="#111" 
+                            roughness={0.8} 
+                            metalness={0.2}
+                            transparent
+                        />
+                    </mesh>
+                    {/* Art Deco Decoration Lines (Left) */}
+                    <mesh position={[0.5, 0, 0.11]}>
+                         <boxGeometry args={[0.05, 7, 0.01]} />
+                         <meshStandardMaterial color="#444" roughness={0.5} metalness={0.8} />
+                    </mesh>
+                    <mesh position={[-0.5, 0, 0.11]}>
+                         <boxGeometry args={[0.05, 7, 0.01]} />
+                         <meshStandardMaterial color="#444" roughness={0.5} metalness={0.8} />
+                    </mesh>
+                </group>
+
+                {/* Right Panel */}
+                <group position={[1.4, 0, 0.2]}>
+                    <mesh>
+                        <boxGeometry args={[2.5, 7.5, 0.2]} />
+                        <meshStandardMaterial 
+                            map={noiseTexture}
+                            color="#111" 
+                            roughness={0.8} 
+                            metalness={0.2}
+                            transparent
+                        />
+                    </mesh>
+                    {/* Art Deco Decoration Lines (Right) */}
+                    <mesh position={[0.5, 0, 0.11]}>
+                         <boxGeometry args={[0.05, 7, 0.01]} />
+                         <meshStandardMaterial color="#444" roughness={0.5} metalness={0.8} />
+                    </mesh>
+                    <mesh position={[-0.5, 0, 0.11]}>
+                         <boxGeometry args={[0.05, 7, 0.01]} />
+                         <meshStandardMaterial color="#444" roughness={0.5} metalness={0.8} />
+                    </mesh>
+                </group>
+                
+                {/* 2. Outer Frame Border (Thin lines) */}
+                <mesh position={[0, 3.8, 0.2]}>
+                    <boxGeometry args={[6, 0.1, 0.3]} />
+                    <meshStandardMaterial color="#222" metalness={0.5} />
+                </mesh>
+                <mesh position={[0, -3.8, 0.2]}>
+                    <boxGeometry args={[6, 0.1, 0.3]} />
+                    <meshStandardMaterial color="#222" metalness={0.5} />
+                </mesh>
+                <mesh position={[-2.9, 0, 0.2]}>
+                    <boxGeometry args={[0.1, 7.7, 0.3]} />
+                    <meshStandardMaterial color="#222" metalness={0.5} />
+                </mesh>
+                <mesh position={[2.9, 0, 0.2]}>
+                    <boxGeometry args={[0.1, 7.7, 0.3]} />
+                    <meshStandardMaterial color="#222" metalness={0.5} />
+                </mesh>
+
+                {/* 3. The Gap / Void (Clickable Area) */}
+                <mesh 
+                    position={[0, 0, 0.15]} 
+                    onClick={onEnter} 
+                    onPointerOver={() => document.body.style.cursor = 'pointer'} 
+                    onPointerOut={() => document.body.style.cursor = 'auto'}
+                >
+                    <planeGeometry args={[5.5, 7.5]} />
+                    <meshBasicMaterial color="#000" transparent opacity={0} /> {/* Invisible Hitbox */}
+                </mesh>
+
+                {/* 4. Subtle Inner Glow from the crack */}
+                <mesh position={[0, 0, 0.21]}>
+                    <planeGeometry args={[0.15, 7.5]} />
+                    <meshBasicMaterial color="#d4af37" transparent opacity={visiblityOpacity * 0.4} blending={THREE.AdditiveBlending} />
+                </mesh>
+
+                {/* 5. Text Overlay - Fades in via CSS opacity */}
+                <Html 
+                    transform 
+                    position={[0, 0, 0.6]} 
+                    center 
+                    style={{ 
+                        pointerEvents: 'none', 
+                        opacity: visiblityOpacity, 
+                        transition: 'opacity 0.2s linear' 
+                    }}
+                >
+                  <div className="flex flex-col items-center justify-center text-center select-none w-64">
+                    <h2 className="text-2xl font-serif text-white/90 tracking-[0.6em] uppercase font-bold drop-shadow-2xl">
+                        THE END
+                    </h2>
+                    <div className="h-px w-8 bg-white/20 my-3"></div>
+                    <button 
+                        className="pointer-events-auto px-4 py-1.5 border border-white/10 hover:bg-white/5 hover:border-cinema-gold text-white/50 hover:text-white text-[9px] tracking-[0.3em] uppercase transition-all duration-500 rounded-sm"
+                        onClick={onEnter}
+                        style={{ pointerEvents: visiblityOpacity > 0.8 ? 'auto' : 'none' }}
+                    >
+                        Return
+                    </button>
+                  </div>
+                </Html>
+
+             </group>
+        </group>
+    )
+}
+
+const FollowCameraGrid = () => {
+    const gridRef = useRef<THREE.Group>(null);
+    const { camera } = useThree();
+    useFrame(() => {
+        if (gridRef.current) {
+            gridRef.current.position.set(0, -3.95, camera.position.z);
+            gridRef.current.position.x = camera.position.x;
+        }
+    });
+    return (
+        <group ref={gridRef}>
+             <gridHelper args={[100, 50, 0x444444, 0x111111]} />
+        </group>
+    )
+}
+
+const CorridorStructure = ({ length }: { length: number }) => {
+    const indices = Array.from({ length: length + 4 }, (_, i) => i - 2);
+    return (
+        <group>
+            {indices.map(i => {
+                const pos = getPathPoint(i);
+                const nextPos = getPathPoint(i + 0.1);
+                const dummyObj = new THREE.Object3D();
+                dummyObj.position.copy(pos);
+                dummyObj.lookAt(nextPos);
+                const rot: [number, number, number] = [dummyObj.rotation.x, dummyObj.rotation.y, dummyObj.rotation.z];
+
+                return (
+                    <group key={i} position={[pos.x, 0, pos.z]} rotation={rot}>
+                        <mesh position={[0, -3.9, 0]} rotation={[-Math.PI/2, 0, 0]} raycast={() => null}>
+                            <ringGeometry args={[7.5, 7.8, 32]} />
+                            <meshBasicMaterial color="#333" opacity={0.3} transparent />
+                        </mesh>
+                        <mesh position={[0, 5, 0]} rotation={[0, 0, 0]} raycast={() => null}>
+                             <torusGeometry args={[11, 0.05, 16, 64, Math.PI]} />
+                             <meshBasicMaterial color="#555" />
+                        </mesh>
+                        <mesh position={[-11, 0, 0]} raycast={() => null}>
+                            <boxGeometry args={[0.1, 12, 0.1]} />
+                            <meshStandardMaterial color="#222" />
+                        </mesh>
+                        <mesh position={[11, 0, 0]} raycast={() => null}>
+                            <boxGeometry args={[0.1, 12, 0.1]} />
+                            <meshStandardMaterial color="#222" />
+                        </mesh>
+                    </group>
+                )
+            })}
+        </group>
+    )
+}
+
+const MovieIcon = ({ id, color1, color2 }: { id: number, color1: string, color2: string }) => {
+  const group = useRef<THREE.Group>(null);
+  useFrame((state, delta) => {
+    if (group.current) {
+        group.current.rotation.y += delta * 0.5;
+        group.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+    }
+  });
+
+  const materialGlass = <meshStandardMaterial color={color1} emissive={color1} emissiveIntensity={0.6} roughness={0.2} metalness={0.8} transparent opacity={0.9} />;
+  const materialSolid = <meshStandardMaterial color={color2} emissive={color2} emissiveIntensity={0.2} roughness={0.3} metalness={0.6} />;
+
+  const renderSpecificIcon = () => {
+      // Use mod 16 so infinite IDs loop through available shapes
+      const shapeId = ((id - 1) % 16) + 1;
+      
+      switch (shapeId) {
+          case 1: return <group><Cylinder args={[0.3, 0.3, 1, 16]}>{materialGlass}</Cylinder><Torus args={[0.2, 0.05, 16, 32]} rotation={[Math.PI/2, 0, 0]} position={[0, 0.55, 0]}>{materialSolid}</Torus></group>;
+          case 2: return <Box args={[0.6, 1.4, 0.15]}><meshStandardMaterial color="#222" emissive="#333" emissiveIntensity={0.4} roughness={0.1} metalness={0.9} /></Box>;
+          case 3: return <group><Torus args={[0.5, 0.15, 16, 32]}>{materialGlass}</Torus><Sphere args={[0.2]} position={[0,0,0]}>{materialSolid}</Sphere></group>;
+          case 4: return <group><Sphere args={[0.5, 32, 32]}><meshBasicMaterial color="#ffaa00" /></Sphere><Torus args={[0.7, 0.02, 16, 64]}><meshBasicMaterial color="#00ffff" /></Torus></group>;
+          case 5: return <group><Box args={[0.6, 0.4, 0.6]} position={[0, -0.3, 0]}>{materialSolid}</Box><Box args={[0.4, 0.3, 0.4]} position={[0, 0.1, 0]}>{materialGlass}</Box></group>;
+          case 6: return <group rotation={[0, 0, Math.PI / 4]}><Box args={[0.1, 1.5, 0.05]} position={[0, 0, 0]}>{materialGlass}</Box><Box args={[0.4, 0.05, 0.1]} position={[0, -0.5, 0]}>{materialSolid}</Box></group>;
+          case 7: return <group><Sphere args={[0.3, 32, 32]} position={[0,0,0]}><meshBasicMaterial color="black" /></Sphere><Torus args={[0.6, 0.05, 16, 64]} rotation={[Math.PI/3, 0, 0]}><meshBasicMaterial color={color1} /></Torus><Torus args={[0.6, 0.05, 16, 64]} rotation={[-Math.PI/3, 0, 0]}><meshBasicMaterial color={color2} /></Torus></group>;
+          case 8: return <group rotation={[0, 0, Math.PI/4]}><Capsule args={[0.3, 1, 4, 16]}><meshStandardMaterial color={color1} emissive={color1} emissiveIntensity={0.5} roughness={0.2} metalness={0.5} /></Capsule></group>;
+          case 9: return <group><Cylinder args={[0.05, 0.05, 1.5]} position={[0, -0.2, 0]}>{materialSolid}</Cylinder><Sphere args={[0.3]} position={[0, 0.6, 0]}><meshBasicMaterial color={color2} /></Sphere></group>;
+          case 10: return <Icosahedron args={[0.6, 0]}><meshStandardMaterial color="#444" roughness={0.9} flatShading /></Icosahedron>;
+          case 11: return <Torus args={[0.6, 0.25, 16, 32]}><meshStandardMaterial color="#222" roughness={0.4} /></Torus>;
+          case 12: return <group rotation={[0, 0, -Math.PI / 4]}><Cylinder args={[0.05, 0.05, 1.8]} position={[0,0,0]}>{materialSolid}</Cylinder><Cone args={[0.2, 0.4, 4]} position={[0, 0.9, 0]}>{materialGlass}</Cone></group>;
+          case 13: return <group><Torus args={[0.6, 0.2, 16, 32]}><meshStandardMaterial color="#d00" emissive="#500" roughness={0.2} /></Torus><Cylinder args={[0.4, 0.4, 0.2]} rotation={[Math.PI/2, 0, 0]}><meshStandardMaterial color="#ccc" metalness={1} /></Cylinder></group>;
+          case 14: return <group><Cone args={[0.5, 0.8, 32]} position={[0, -0.2, 0]} rotation={[Math.PI, 0, 0]}><meshStandardMaterial color={color1} metalness={0.8} roughness={0.2} /></Cone><Cylinder args={[0.05, 0.05, 0.6]} position={[0, 0.5, 0]}>{materialSolid}</Cylinder></group>;
+          case 15: return <group><Box args={[0.8, 1.4, 0.1]}><meshStandardMaterial color="#87CEEB" /></Box><Box args={[0.7, 1.3, 0.12]} position={[0,0,0]}><meshStandardMaterial color="black" /></Box></group>;
+          case 16: return <group rotation={[0, 0, Math.PI/6]}><Cylinder args={[0.05, 0.02, 1.4]} position={[-0.2, 0, 0]} rotation={[0, 0, -0.1]}><meshStandardMaterial color="#ddd" metalness={1} roughness={0.2} /></Cylinder><Cylinder args={[0.05, 0.02, 1.5]} position={[0, 0.1, 0]}><meshStandardMaterial color="#ddd" metalness={1} roughness={0.2} /></Cylinder><Cylinder args={[0.05, 0.02, 1.4]} position={[0.2, 0, 0]} rotation={[0, 0, 0.1]}><meshStandardMaterial color="#ddd" metalness={1} roughness={0.2} /></Cylinder></group>;
+          default: return <Octahedron args={[0.6, 0]}>{materialGlass}</Octahedron>;
+      }
+  }
+
+  return <group ref={group}>{renderSpecificIcon()}</group>;
+};
+
+const AtmosphereParticles = ({ targetColor }: { targetColor: string }) => {
+    const meshRef = useRef<THREE.InstancedMesh>(null);
+    const count = 1500;
+    const dummy = useMemo(() => new THREE.Object3D(), []);
+    const { camera } = useThree();
+    const particles = useMemo(() => {
+        const temp = [];
+        for (let i = 0; i < count; i++) {
+            temp.push({ x: (Math.random() - 0.5) * 80, y: (Math.random() - 0.5) * 40 + 5, z: (Math.random() - 0.5) * 100, scale: Math.random() * 0.2 + 0.02, speed: Math.random() * 0.2, offset: Math.random() * 100 });
+        }
+        return temp;
+    }, []);
+
+    useFrame((state, delta) => {
+        if (!meshRef.current) return;
+        const material = meshRef.current.material as THREE.MeshBasicMaterial;
+        if (material && 'color' in material && targetColor) {
+             if (material.color && typeof material.color.lerp === 'function') material.color.lerp(new THREE.Color(targetColor), delta * 2);
+        }
+        const camZ = camera.position.z;
+        const camX = camera.position.x;
+        const time = state.clock.elapsedTime;
+        for (let i = 0; i < count; i++) {
+            const p = particles[i];
+            dummy.position.set(p.x + camX, p.y + Math.sin(time * p.speed + p.offset) * 1, p.z + camZ);
+            dummy.rotation.set(time * 0.1, time * 0.1, 0);
+            dummy.scale.setScalar(p.scale);
+            dummy.updateMatrix();
+            meshRef.current.setMatrixAt(i, dummy.matrix);
+        }
+        meshRef.current.instanceMatrix.needsUpdate = true;
+    });
+    return <instancedMesh ref={meshRef} args={[undefined, undefined, count]} raycast={() => null}><dodecahedronGeometry args={[0.1, 0]} /><meshBasicMaterial color="#ffffff" transparent opacity={0.6} /></instancedMesh>;
+};
+
+interface MoviePanelProps {
+  movie: MovieArt;
+  position: [number, number, number];
+  rotation: [number, number, number];
+  isActive: boolean;
+  isDetailsOpen: boolean;
+  onClick: () => void;
+  isLeft: boolean;
+}
+
+const MoviePanel: React.FC<MoviePanelProps> = ({ 
+  movie, 
+  position,
+  rotation,
+  isActive, 
+  isDetailsOpen,
+  onClick,
+  isLeft
+}) => {
+  const [hovered, setHovered] = useState(false);
+  const primaryColor = movie.color_palette[0];
+  const secondaryColor = movie.color_palette[1] || '#ffffff';
+  
+  const flipGroup = useRef<THREE.Group>(null);
+  const outerGroup = useRef<THREE.Group>(null);
+
+  const isPosterRevealed = isActive && isDetailsOpen;
+
+  useFrame((state, delta) => {
+    // 1. FLIP & ROTATION LOGIC
+    if (flipGroup.current) {
+        let targetRotation = Math.PI; // Default to Back (180 deg)
+
+        if (isPosterRevealed) {
+            const parentRotY = rotation[1];
+            const desiredWorldRotY = isLeft ? Math.PI / 2 : -Math.PI / 2;
+            targetRotation = desiredWorldRotY - parentRotY;
+        }
+
+        flipGroup.current.rotation.y = damp(flipGroup.current.rotation.y, targetRotation, 5, delta);
+    }
+
+    // 2. SCALE LOGIC
+    if (outerGroup.current) {
+        const targetScale = isPosterRevealed ? 1.3 : 1.0;
+        outerGroup.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), delta * 4);
+    }
+  });
+
+  return (
+    <group 
+        ref={outerGroup}
+        position={position} 
+        rotation={rotation}
+    >
+      <SpotLight
+        position={[0, 4, 3]} 
+        angle={0.3}
+        penumbra={0.5}
+        intensity={hovered ? 50 : 0} 
+        distance={10}
+        color={primaryColor}
+        target={outerGroup.current || undefined}
+        castShadow
+      />
+
+      <Float speed={2} rotationIntensity={0.05} floatIntensity={0.2}>
+        
+          {/* HITBOX */}
+          <mesh
+            position={[0, 0, 0]} 
+            onClick={(e) => { 
+                e.stopPropagation(); 
+                onClick(); 
+            }}
+            onPointerOver={(e) => {
+                e.stopPropagation();
+                setHovered(true);
+            }}
+            onPointerOut={() => setHovered(false)}
+          >
+            <boxGeometry args={[3.6, 5.2, 0.3]} />
+            <meshBasicMaterial 
+                visible={false}
+                side={THREE.DoubleSide} 
+            />
+          </mesh>
+
+
+        {/* The flippable container */}
+        <group ref={flipGroup}>
+            
+            {/* FLOATING ICONS - Front Only, positioned higher and further out */}
+            <group position={[2.5, 3.8, 0.5]}>
+                <Float speed={4} rotationIntensity={1} floatIntensity={0.5}>
+                    <group scale={0.7}>
+                        <MovieIcon id={movie.id} color1={primaryColor} color2={secondaryColor} />
+                    </group>
+                </Float>
+            </group>
+            
+            {/* --- SIDE A: Procedural Poster (Front) --- */}
+            <group position={[0, 0, 0.06]}>
+                
+                <mesh position={[0, 0, -0.01]} raycast={() => null}>
+                    <boxGeometry args={[3.6, 5.2, 0.1]} />
+                    <meshStandardMaterial color="#111" />
+                </mesh>
+
+                <ProceduralPoster 
+                    movie={movie}
+                    isActive={true} 
+                />
+            </group>
+
+            {/* --- SIDE B: Procedural Poster (Back - Mirrored) --- */}
+            <group position={[0, 0, -0.06]} rotation={[0, Math.PI, 0]}>
+                <mesh position={[0, 0, -0.01]} raycast={() => null}>
+                    <boxGeometry args={[3.6, 5.2, 0.1]} />
+                    <meshStandardMaterial color="#111" />
+                </mesh>
+
+                <ProceduralPoster 
+                    movie={movie}
+                    isActive={true} 
+                />
+            </group>
+
+        </group>
+
+      </Float>
+    </group>
+  );
+};
+
+// --- Procedural Poster System ---
+
+const generatePosterTexture = (movie: MovieArt): THREE.CanvasTexture => {
+    const canvas = document.createElement('canvas');
+    const width = 512;
+    const height = 768;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) return new THREE.CanvasTexture(canvas);
+
+    // Colors
+    const bg = movie.color_palette[0] || '#000';
+    const accent1 = movie.color_palette[1] || '#fff';
+    const accent2 = movie.color_palette[2] || '#888';
+    const textCol = '#fff';
+
+    // Background
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, width, height);
+
+    // Random Design Seed based on ID
+    const seed = movie.id % 4;
+
+    ctx.save();
+    
+    if (seed === 0) {
+        // Style: Big Circle / Swiss Style
+        ctx.fillStyle = accent1;
+        ctx.beginPath();
+        ctx.arc(width/2, height/2 - 100, 250, 0, Math.PI*2);
+        ctx.fill();
+        
+        ctx.fillStyle = accent2;
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.fillRect(50, 500, width - 100, 50);
+        ctx.globalCompositeOperation = 'source-over';
+
+    } else if (seed === 1) {
+        // Style: Diagonals
+        ctx.fillStyle = accent1;
+        ctx.beginPath();
+        ctx.moveTo(0, height);
+        ctx.lineTo(width, 0);
+        ctx.lineTo(width, height/2);
+        ctx.lineTo(0, height);
+        ctx.fill();
+
+        ctx.fillStyle = accent2;
+        ctx.beginPath();
+        ctx.arc(width - 100, 150, 80, 0, Math.PI*2);
+        ctx.fill();
+
+    } else if (seed === 2) {
+         // Style: Split Horizon
+         ctx.fillStyle = accent1;
+         ctx.fillRect(0, height/2, width, height/2);
+         
+         ctx.strokeStyle = accent2;
+         ctx.lineWidth = 20;
+         ctx.strokeRect(40, 40, width-80, height-80);
+
+    } else {
+        // Style: Typographic Chaos
+        ctx.fillStyle = accent1;
+        ctx.font = 'bold 300px serif';
+        ctx.globalAlpha = 0.2;
+        ctx.fillText(String(movie.year), -50, 300);
+        ctx.fillText(String(movie.year), 100, 600);
+        ctx.globalAlpha = 1.0;
+    }
+    
+    ctx.restore();
+
+    // Typography (Swiss/International Style)
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    
+    // Title
+    ctx.fillStyle = textCol;
+    ctx.font = 'bold 56px sans-serif'; // Modern Sans
+    
+    // Wrap text logic
+    const words = movie.title_en.toUpperCase().split(' ');
+    let line = '';
+    let y = height - 240;
+    const x = 40;
+    const maxWidth = width - 80;
+
+    for(let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += 65;
+        } else {
+            line = testLine;
+        }
+    }
+    ctx.fillText(line, x, y);
+
+    // Meta Data Line
+    y += 80;
+    ctx.font = '400 24px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.fillText(`${movie.year} // ${movie.director_en.toUpperCase()}`, x, y);
+    
+    // Visual Metaphor Small
+    y += 40;
+    ctx.font = 'italic 20px serif';
+    ctx.fillText(movie.visual_metaphor.en.substring(0, 40) + '...', x, y);
+
+    return new THREE.CanvasTexture(canvas);
+};
+
+const ProceduralPoster = ({ movie, isActive }: { movie: MovieArt, isActive: boolean }) => {
+    const meshRef = useRef<THREE.Mesh>(null);
+    const texture = useMemo(() => generatePosterTexture(movie), [movie]);
+
+    useFrame((state) => {
+        if (!meshRef.current) return;
+        // Subtle shimmer effect
+        if (isActive) {
+             const time = state.clock.elapsedTime;
+             const material = meshRef.current.material as THREE.MeshBasicMaterial;
+             material.opacity = 0.9 + Math.sin(time * 2) * 0.05;
+        }
+    });
+
+    return (
+        <mesh ref={meshRef} position={[0, 0, 0.05]} raycast={() => null}>
+            <planeGeometry args={[3.2, 4.8]} />
+            <meshBasicMaterial 
+                map={texture} 
+                transparent 
+                opacity={0.9}
+                side={THREE.DoubleSide} 
+            />
+        </mesh>
+    );
+};
+
+/* ===== App (index) ===== */
+// Icons
+const IconArrowLeft = (props: React.SVGProps<SVGSVGElement>) => <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>;
+const IconArrowRight = (props: React.SVGProps<SVGSVGElement>) => <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>;
+const IconClose = (props: React.SVGProps<SVGSVGElement>) => <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>;
+const IconSparkles = (props: React.SVGProps<SVGSVGElement>) => <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" {...props}><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" /></svg>;
+const IconRestart = (props: React.SVGProps<SVGSVGElement>) => <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>;
+const IconReload = (props: React.SVGProps<SVGSVGElement>) => <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>;
+
+function Loader() {
+  const { progress } = useProgress();
+  return (
+    <Html center>
+      <div className="text-cinema-gold font-mono text-xs tracking-widest uppercase">
+        {progress.toFixed(0)}% Loading Universe...
+      </div>
+    </Html>
+  );
+}
+
+const App = () => {
+  const [state, setState] = useState<AppState>({
+    currentMovieIndex: 0,
+    isDetailsOpen: false,
+    language: 'zh',
+    isLoading: false, 
+    movies: FALLBACK_MOVIES,
+  });
+
+  const [scrollPos, setScrollPos] = useState(0);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  
+  // Ref to track scroll position inside async effects
+  const scrollPosRef = useRef(0);
+  useEffect(() => { scrollPosRef.current = scrollPos; }, [scrollPos]);
+
+  // Initial Fetch (Only if user hasn't moved much)
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        const data = await fetchMovieData();
+        
+        // Only update if user is still near the start to prevent jarring shifts
+        if (scrollPosRef.current > 0.5) {
+            console.log("User active, skipping initial background update.");
+            return;
+        }
+
+        if (data && data.movies && data.movies.length > 0) {
+          setState(prev => ({ ...prev, movies: data.movies }));
+        }
+      } catch (e) {
+        console.error("Background fetch failed, keeping fallback data");
+      }
+    };
+    initData();
+  }, []);
+
+  // --- Return to Start Logic (For the Door Button) ---
+  const handleReturnToStart = () => {
+      // Setting scroll pos to 0 triggers a smooth camera "fly back" due to damping in Gallery3D
+      setScrollPos(0);
+      setState(s => ({ ...s, isDetailsOpen: false }));
+  };
+
+  // --- Refresh / New Exhibition Logic (For the Top Right Button) ---
+  const handleRefreshExhibition = async () => {
+    if (state.isLoading) return;
+
+    setState(prev => ({ ...prev, isLoading: true, isDetailsOpen: false }));
+    setErrorMsg(null);
+    setScrollPos(0);
+
+    // Timeout Promise (20 seconds)
+    const timeoutPromise = new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 20000)
+    );
+
+    try {
+      // Race the fetch against the timeout
+      const data = await Promise.race([
+          fetchMovieData(),
+          timeoutPromise
+      ]);
+      
+      // Artificial minimal delay for cinematic transition
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if (data && data.movies && data.movies.length > 0) {
+        setState(prev => ({ 
+          ...prev, 
+          movies: data.movies, 
+          isLoading: false,
+          currentMovieIndex: 0
+        }));
+      } else {
+        throw new Error("No data received");
+      }
+    } catch (e: any) {
+      console.error("Refresh failed", e);
+      setErrorMsg("Connection unstable. Restoring archive...");
+      
+      // Show error briefly then stop loading
+      setTimeout(() => {
+          setState(prev => ({ ...prev, isLoading: false }));
+          setErrorMsg(null);
+      }, 2000);
+    }
+  };
+
+
+  // Keyboard Event Listener for ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && state.isDetailsOpen) {
+            setState(s => ({ ...s, isDetailsOpen: false }));
+        }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [state.isDetailsOpen]);
+
+  // Update current index based on scroll position for UI sync
+  useEffect(() => {
+    const index = Math.round(scrollPos);
+    // Clamp index for UI display
+    const safeIndex = Math.min(Math.max(index, 0), state.movies.length - 1);
+    
+    if (safeIndex !== state.currentMovieIndex) {
+      setState(prev => ({ ...prev, currentMovieIndex: safeIndex }));
+    }
+  }, [scrollPos, state.movies.length]);
+
+  const handleNext = () => {
+    // Allow scrolling to movies.length to see the portal
+    setScrollPos(prev => Math.min(prev + 1, state.movies.length));
+  };
+
+  const handlePrev = () => {
+    setScrollPos(prev => Math.max(prev - 1, 0));
+  };
+  
+  // Wheel Handler with strict damping
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (state.isLoading) return; // Disable scroll during loading
+    const delta = e.deltaY * 0.002;
+    setScrollPos(prev => {
+      const next = prev + delta;
+      // Allow scrolling slightly past the end to see the portal
+      return Math.min(Math.max(0, next), state.movies.length);
+    });
+  }, [state.movies.length, state.isLoading]);
+
+  const toggleLanguage = () => {
+    setState(prev => ({ ...prev, language: prev.language === 'zh' ? 'en' : 'zh' }));
+  };
+
+  // Safe movie access - clamp to last available movie
+  const safeMovieIndex = Math.min(state.currentMovieIndex, state.movies.length - 1);
+  const currentMovie = state.movies[safeMovieIndex] || state.movies[0];
+  
+  const lang = state.language;
+  const isEn = lang === 'en';
+  
+  // Layout Logic:
+  const isLeftMovie = state.currentMovieIndex % 2 === 0;
+  const panelOnRight = isLeftMovie; 
+  
+  if (!currentMovie) return null;
+
+  return (
+    <div 
+      className="w-full h-screen bg-[#050505] text-white overflow-hidden relative font-sans selection:bg-cinema-gold selection:text-black"
+      onWheel={handleWheel}
+    >
+      
+      {/* Film Grain Overlay */}
+      <div className="absolute inset-0 pointer-events-none z-50 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay"></div>
+
+      {/* Loading Overlay */}
+      <AnimatePresence>
+        {state.isLoading && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[100] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center pointer-events-auto"
+          >
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="mb-8"
+            >
+              <IconSparkles width={48} height={48} className="text-cinema-gold" />
+            </motion.div>
+            
+            {errorMsg ? (
+               <h2 className="text-xl font-serif text-red-400 tracking-[0.2em] uppercase mb-4">
+                  {errorMsg}
+               </h2>
+            ) : (
+                <>
+                    <h2 className="text-2xl font-serif text-white tracking-[0.5em] uppercase mb-4 animate-pulse">
+                        {isEn ? 'Curating Exhibition...' : '正在策展新的影像...'}
+                    </h2>
+                    <div className="text-xs text-gray-500 font-mono tracking-widest">
+                        AI GENERATING 10 ARTIFACTS
+                    </div>
+                </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 3D Scene */}
+      <div className="absolute inset-0 z-0">
+        <Canvas camera={{ position: [0, 0, 5], fov: 50 }} dpr={[1, 2]}> 
+          <color attach="background" args={['#050505']} />
+          <fogExp2 attach="fog" color="#050505" density={0.01} />
+          
+          <Suspense fallback={<Loader />}>
+            <Gallery3D 
+              movies={state.movies} 
+              scrollPos={scrollPos}
+              isDetailsOpen={state.isDetailsOpen}
+              onItemClick={(idx) => {
+                setScrollPos(idx);
+                setState(s => ({ ...s, isDetailsOpen: true }));
+              }}
+              onRestart={handleReturnToStart} // FIXED: Door now triggers Return, not Refresh
+            />
+          </Suspense>
+        </Canvas>
+      </div>
+
+      {/* Header */}
+      <header className="absolute top-0 left-0 w-full p-8 flex justify-between items-start z-40 pointer-events-none">
+        <div className="pointer-events-auto">
+          <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-br from-white via-gray-300 to-gray-600 drop-shadow-2xl">
+            {isEn ? 'ETERNAL GALLERY' : '永恒回廊'}
+          </h1>
+          <div className="flex items-center gap-3 mt-2">
+            <p className="text-xs md:text-sm text-gray-400 font-mono tracking-[0.3em] uppercase opacity-70 border-l-2 border-cinema-gold pl-3">
+                {isEn ? 'Cinema Archive' : '电影艺术档案'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-3 pointer-events-auto">
+            
+            {/* NEW EXHIBITION BUTTON */}
+            <button 
+                onClick={handleRefreshExhibition}
+                disabled={state.isLoading}
+                className="group flex items-center gap-2 px-4 py-2 bg-cinema-gold/10 hover:bg-cinema-gold/20 border border-cinema-gold/30 hover:border-cinema-gold text-cinema-gold rounded-sm transition-all duration-300 backdrop-blur-md"
+            >
+                <IconSparkles className={`w-3 h-3 ${state.isLoading ? 'animate-spin' : 'group-hover:rotate-12 transition-transform'}`} />
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase">
+                    {isEn ? 'New Exhibition' : '策展新展'}
+                </span>
+            </button>
+
+            {/* LANGUAGE TOGGLE */}
+            <button 
+                onClick={toggleLanguage}
+                className="px-4 py-1.5 glass-panel rounded-sm text-[10px] font-bold tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-300 uppercase border border-white/20 text-white/70"
+            >
+                {isEn ? 'CN / EN' : '中 / 英'}
+            </button>
+        </div>
+      </header>
+
+      {/* Navigation Controls */}
+      <div className="absolute bottom-12 right-12 z-40 flex flex-col gap-4 pointer-events-auto">
+        <div className="flex flex-col items-center gap-2 glass-panel p-2 rounded-full border border-white/10">
+           {/* Up Arrow triggers NEXT (Forward) */}
+           <ControlButton onClick={handleNext} icon={<IconArrowLeft className="rotate-90" />} />
+           <div className="w-px h-8 bg-white/10"></div>
+           {/* Down Arrow triggers PREV (Backward) */}
+           <ControlButton onClick={handlePrev} icon={<IconArrowRight className="rotate-90" />} />
+        </div>
+        
+        {/* Restart Button (Visible only when deep in the gallery) */}
+        <AnimatePresence>
+            {scrollPos > 5 && (
+                 <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                 >
+                     <button 
+                        onClick={handleReturnToStart}
+                        className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/20 text-cinema-gold hover:bg-cinema-gold hover:text-black transition-all duration-300 backdrop-blur-md"
+                        title={isEn ? "Return to Entrance" : "回到入口"}
+                     >
+                        <IconRestart width={16} height={16} />
+                     </button>
+                 </motion.div>
+            )}
+        </AnimatePresence>
+      </div>
+      
+      {/* Progress Indicator - Shows total loaded so far */}
+      <div className="absolute bottom-12 left-12 z-40 font-mono text-xs text-cinema-gold tracking-widest opacity-80">
+          {String(state.currentMovieIndex + 1).padStart(2, '0')} / {state.movies.length}
+      </div>
+
+      {/* Movie Info (Bottom Center) - HIDE when at the Portal (end) */}
+      {Math.round(scrollPos) < state.movies.length && (
+      <div className="absolute bottom-16 left-1/2 -translate-x-1/2 text-center pointer-events-none w-full px-4 z-30">
+        <AnimatePresence mode="wait">
+          {!state.isDetailsOpen && (
+            <motion.div
+              key={currentMovie.id}
+              initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: -20, filter: 'blur(5px)' }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="flex flex-col items-center"
+            >
+              <h2 className="text-3xl md:text-5xl font-serif text-white mb-3 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] tracking-wide">
+                {lang === 'zh' ? currentMovie.title_zh : currentMovie.title_en}
+              </h2>
+              
+              <div className="h-px w-24 bg-gradient-to-r from-transparent via-cinema-gold to-transparent mb-3 opacity-50"></div>
+
+              <div className="bg-black/40 backdrop-blur-md px-6 py-3 rounded-full border border-white/5 flex items-center gap-4">
+                 <span className="font-mono text-xs text-gray-400">{currentMovie.year}</span>
+                 <span className="text-cinema-gold">•</span>
+                 <span className="font-serif italic text-gray-300">{lang === 'zh' ? currentMovie.director_zh : currentMovie.director_en}</span>
+              </div>
+              
+              <motion.div 
+                 initial={{ opacity: 0 }}
+                 animate={{ opacity: 0.6 }}
+                 transition={{ delay: 1 }}
+                 className="mt-6 text-[10px] text-gray-400 uppercase tracking-[0.3em]"
+              >
+                  {isEn ? 'Click poster to reveal' : '点击海报揭秘'}
+              </motion.div>
+
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      )}
+
+      {/* Slide-in Detail Panel */}
+      <AnimatePresence>
+        {state.isDetailsOpen && currentMovie && (
+          <>
+            <motion.div 
+              initial={{ x: panelOnRight ? '100%' : '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: panelOnRight ? '100%' : '-100%' }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className={`absolute top-0 ${panelOnRight ? 'right-0 border-l' : 'left-0 border-r'} h-full w-full md:w-[600px] z-50 bg-black/75 backdrop-blur-3xl saturate-200 border-white/10 shadow-2xl overflow-y-auto`}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="p-8 md:p-12 relative min-h-full">
+                
+                <button 
+                  className={`absolute top-8 ${panelOnRight ? 'right-8' : 'left-8'} text-gray-500 hover:text-white transition-colors`}
+                  onClick={() => setState(s => ({ ...s, isDetailsOpen: false }))}
+                >
+                  <IconClose />
+                </button>
+
+                <div className="space-y-10 mt-12">
+                  
+                  {/* Header Section */}
+                  <div>
+                    <div className="flex items-baseline justify-between mb-2">
+                        <span className="text-cinema-gold font-mono text-xs tracking-widest uppercase">No. {String(currentMovie.id).padStart(3, '0')}</span>
+                        <span className="text-gray-500 font-mono text-xs">{currentMovie.year}</span>
+                    </div>
+                    
+                    <h2 className="text-4xl md:text-6xl font-serif font-bold text-white mb-4 leading-none tracking-tight">
+                        {lang === 'zh' ? currentMovie.title_zh : currentMovie.title_en}
+                    </h2>
+
+                    <div className="flex items-center gap-3 mb-8 text-sm text-gray-400 font-sans tracking-widest uppercase">
+                        <span className="bg-white/10 px-2 py-0.5 rounded text-[10px] text-cinema-gold">DIR</span>
+                        <span>{lang === 'zh' ? currentMovie.director_zh : currentMovie.director_en}</span>
+                    </div>
+
+                    <div className="relative pl-6 border-l border-cinema-gold/50">
+                        <h3 className="text-xl md:text-2xl font-serif text-gray-200 italic leading-relaxed opacity-90">
+                            {lang === 'zh' ? currentMovie.visual_metaphor.zh : currentMovie.visual_metaphor.en}
+                        </h3>
+                    </div>
+                  </div>
+
+                  {/* Haiku Section */}
+                  <div className="bg-white/5 p-6 rounded-lg border border-white/5 relative overflow-hidden">
+                     <div className="absolute top-0 left-0 w-1 h-full bg-cinema-gold"></div>
+                     <pre className="font-serif text-lg text-gray-300 whitespace-pre-wrap leading-loose italic relative z-10">
+                      {lang === 'zh' ? currentMovie.haiku.zh : currentMovie.haiku.en}
+                     </pre>
+                     <div className="absolute -right-4 -bottom-4 text-[100px] text-white/5 font-serif pointer-events-none select-none leading-none">”</div>
+                  </div>
+
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-2 gap-8 py-8 border-t border-b border-white/10">
+                    <div>
+                      <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.2em] mb-3">{isEn ? 'Emotion' : '核心情绪'}</h4>
+                      <p className="text-xl font-serif text-white">{lang === 'zh' ? currentMovie.core_emotion.zh : currentMovie.core_emotion.en}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.2em] mb-3">{isEn ? 'Key Element' : '关键意象'}</h4>
+                      <p className="text-xl font-serif text-white">{lang === 'zh' ? currentMovie.key_element.zh : currentMovie.key_element.en}</p>
+                    </div>
+                  </div>
+
+                  {/* Palette */}
+                  <div>
+                    <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.2em] mb-4">{isEn ? 'Palette' : '色调'}</h4>
+                    <div className="flex gap-4">
+                      {currentMovie.color_palette.map((color, i) => (
+                        <div key={i} className="group relative">
+                          <div 
+                            className="w-12 h-12 rounded-full border border-white/10 shadow-lg cursor-pointer transition-transform hover:scale-110" 
+                            style={{ backgroundColor: color }} 
+                          />
+                          <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity font-mono">{color}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Art Note */}
+                  <div className="pt-2">
+                    <h4 className="text-[10px] text-gray-500 uppercase tracking-[0.2em] mb-4">{isEn ? 'Curator Note' : '策展人笔记'}</h4>
+                    <p className="text-gray-400 leading-8 text-sm md:text-base font-light text-justify">
+                      {lang === 'zh' ? currentMovie.art_note.zh : currentMovie.art_note.en}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Footer Decor */}
+                <div className="absolute bottom-4 right-8 opacity-10 text-[100px] font-serif leading-none select-none pointer-events-none text-white/5">
+                  {currentMovie.year}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const ControlButton = ({ onClick, icon }: { onClick: () => void, icon: React.ReactNode }) => (
+  <button 
+    onClick={onClick}
+    className="w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
+  >
+    {icon}
+  </button>
+);
+
+const root = createRoot(document.getElementById('root')!);
+root.render(<App />);
+    </script>
+    <script>
+      // 转译/加载失败兜底提示
+      window.addEventListener('error', function(e){
+        var b=document.getElementById('boot');
+        if(b && document.getElementById('root').childElementCount===0){
+          b.innerHTML='<div style="text-align:center;max-width:520px;line-height:2">加载失败，请检查网络（需访问 CDN）。<br>也可解压原项目后 <code>npm install &amp;&amp; npm run dev</code> 运行完整版。</div>';
+        }
+      });
+      // root 渲染后移除 boot 文案
+      var obs=new MutationObserver(function(){ if(document.getElementById('root').childElementCount>0){ var b=document.getElementById('boot'); if(b) b.remove(); obs.disconnect(); } });
+      obs.observe(document.getElementById('root'),{childList:true});
+    </script>
+  </body>
+</html>
